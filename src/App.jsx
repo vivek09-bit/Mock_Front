@@ -12,6 +12,7 @@ import TakeTest from "./pages/TakeTest";
 import TestResult from "./pages/TestResult";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
+
 const App = () => {
   return (
     <Router>
