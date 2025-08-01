@@ -38,8 +38,8 @@ function Header() {
             </Link>
           </li>
           <li>
-            <Link to="/faq" className="hover:text-gray-200">
-              FAQ
+            <Link to="/FAQsPage" className="hover:text-gray-200">
+              FAQs
             </Link>
           </li>
           <li>

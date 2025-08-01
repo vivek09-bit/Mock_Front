@@ -12,6 +12,10 @@ import TakeTest from "./pages/TakeTest";
 import TestResult from "./pages/TestResult";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
+import Tping from './pages/Tping'; // Import the Tping component
+import AboutUs from './components/About'; // Import the AboutUs component
+import ContactForm from './pages/ContactForm'; // Import the ContactForm component
+import FAQsPage from './pages/FAQsPage'; // Import the FAQsPage component
 
 const App = () => {
   return (
@@ -31,7 +35,11 @@ const App = () => {
             <Route path="/take-test/:testId" element={<TakeTest />} />
             <Route path='Test-Submit' element={<TestResult />} />
             <Route path="*" element={<NotFound />} /> 
-            
+            <Route path="/typing" element={<Tping />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path='/contact' element={<ContactForm />} />
+            <Route path="/FAQsPage" element={<FAQsPage />} /> {/* Add FAQs route */}
+
           </Routes>
         </main>
         <Footer />
