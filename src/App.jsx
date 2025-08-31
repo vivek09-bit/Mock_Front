@@ -11,6 +11,8 @@ import TestList from "./components/TestList";
 import TakeTest from "./pages/TakeTest";
 import TestResult from "./pages/TestResult";
 import ForgotPassword from "./pages/ForgotPassword";
+
+import TermsAndConditions from "./pages/TermsAndConditions"
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -31,6 +33,10 @@ const App = () => {
             <Route path="/take-test/:testId" element={<TakeTest />} />
             <Route path='Test-Submit' element={<TestResult />} />
             <Route path="*" element={<NotFound />} /> 
+
+
+            {/* Infomational Routes */}
+            <Route path='/page/terms-portal' element={< TermsAndConditions/>} />
             
           </Routes>
         </main>

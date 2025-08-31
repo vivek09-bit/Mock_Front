@@ -51,7 +51,8 @@ const Register = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post("https://mock-backend-8zgl.onrender.com/api/auth/register", formData);
+      console.log(import.meta.env.BACKEND)
+      const response = await axios.post(`${import.meta.env.BACKEND}/api/auth/register`, formData);
       setSuccess(response.data.message);
       setFormData({
         name: "",
@@ -105,7 +106,7 @@ const Register = () => {
             />
             <label className="text-sm text-gray-600">
               I accept the{" "}
-              <a href="#" className="text-teal-500 font-medium">
+              <a href="/page/terms-portal" className="text-teal-500 font-medium">
                 Terms & Conditions
               </a>
             </label>
