@@ -51,8 +51,9 @@ const Register = () => {
 
     try {
       setLoading(true);
-      console.log(import.meta.env.BACKEND)
-      const response = await axios.post(`${import.meta.env.BACKEND}/api/auth/register`, formData);
+      const base = import.meta.env.VITE_BACKEND || "";
+      console.log("API base:", base);
+      const response = await axios.post(`${base}/api/auth/register`, formData);
       setSuccess(response.data.message);
       setFormData({
         name: "",

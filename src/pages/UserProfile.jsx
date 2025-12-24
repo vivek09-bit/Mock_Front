@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ThemeContext } from "../context/ThemeContext";
 import { FaSignOutAlt, FaCheckCircle } from "react-icons/fa"; 
 
 const UserProfile = () => {
@@ -11,23 +12,35 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { apiBase } = useContext(ThemeContext);
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
+    console.log("UserProfile effect", { username, storedUser });
 
     if (storedUser && storedUser.username === username) {
+      console.log("Using storedUser for profile", storedUser);
       setUser(storedUser);
-      fetchUserTests(storedUser._id);
+      if (storedUser?._id) {
+        console.log("Calling fetchUserTests with storedUser._id", storedUser._id);
+        fetchUserTests(storedUser._id);
+      } else {
+        console.log("No storedUser._id, falling back to fetchUserProfile");
+        fetchUserProfile();
+      }
       setLoading(false);
     } else {
+      console.log("storedUser missing or username mismatch, fetching profile from API");
       fetchUserProfile();
     }
   }, [username]);
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get(`https://mock-backend-8zgl.onrender.com/api/auth/profile/${username}`);
+      const response = await axios.get(`${apiBase}/api/auth/profile/${username}`);
+      console.log("fetchUserProfile response", { status: response.status, dataId: response.data?._id });
       setUser(response.data);
-      fetchUserTests(response.data._id);
+      if (response.data?._id) fetchUserTests(response.data._id);
     } catch (err) {
       setError(err.response?.data?.message || "User not found");
     } finally {
@@ -36,16 +49,33 @@ const UserProfile = () => {
   };
 
   const fetchUserTests = async (userId) => {
+    if (!userId) return;
     try {
-      const response = await axios.get(`https://mock-backend-8zgl.onrender.com/api/user/tests/${userId}`);
+      const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const url = `${apiBase}/api/user/tests/${userId}`;
+      console.log("Fetching user tests", { userId, url, hasToken: !!token });
+
+      const response = await axios.get(url, { headers });
+      console.log("Fetch user tests response:", response?.status, response?.data?.length ?? null);
       setTestRecords(response.data);
     } catch (err) {
+      console.error("Test fetch failed:", {
+        status: err.response?.status,
+        data: err.response?.data,
+        message: err.message,
+      });
+      // Also log raw error text when available to help diagnose 404 pages
+      try { console.debug("Error response text:", err.response?.data); } catch (e) {}
       setTestRecords([]);
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 

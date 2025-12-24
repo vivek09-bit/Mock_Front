@@ -54,10 +54,24 @@ const Login = () => {
         throw new Error("Token not received");
       }
 
-      localStorage.setItem("authToken", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      // Normalize and store token under both keys to be compatible across components
+      const token = response.data.token;
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("token", token);
 
-      navigate(`/profile/${response.data.user.username}`);
+      // Normalize user object to always have `_id` (backend may return `id`)
+      const rawUser = response.data.user || {};
+      const user = { ...rawUser };
+      if (!user._id && user.id) user._id = user.id;
+
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Navigate only if username exists; otherwise navigate to profile root
+      if (user.username) {
+        navigate(`/profile/${user.username}`);
+      } else {
+        navigate(`/profile`);
+      }
     } catch (err) {
       console.error("Login Error:", err.response?.data || err.message);
       setError(err.response?.data?.message || "Login failed");

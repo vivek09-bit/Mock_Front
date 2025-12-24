@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
+import { ThemeContext } from "../context/ThemeContext";
 import { Link } from "react-router-dom";
 
 const TestList = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const { apiBase } = useContext(ThemeContext);
   useEffect(() => {
     axios
-      .get("https://mock-backend-8zgl.onrender.com/api/test") // Adjust to match your API route
+      .get(`${apiBase}/api/test`) // Adjust to match your API route
       .then((response) => {
         setTests(response.data);
         setLoading(false);
