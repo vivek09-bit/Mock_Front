@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
@@ -13,6 +13,7 @@ const UserProfile = () => {
   const [error, setError] = useState("");
 
   const { apiBase } = useContext(ThemeContext);
+  const inFlight = useRef(new Set());
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -50,6 +51,14 @@ const UserProfile = () => {
 
   const fetchUserTests = async (userId) => {
     if (!userId) return;
+
+    // Skip if already in-flight for this userId
+    if (inFlight.current.has(userId)) {
+      console.log("Skipping duplicate fetchUserTests for", userId);
+      return;
+    }
+
+    inFlight.current.add(userId);
     try {
       const token = localStorage.getItem("authToken") || localStorage.getItem("token");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -66,9 +75,10 @@ const UserProfile = () => {
         data: err.response?.data,
         message: err.message,
       });
-      // Also log raw error text when available to help diagnose 404 pages
       try { console.debug("Error response text:", err.response?.data); } catch (e) {}
       setTestRecords([]);
+    } finally {
+      inFlight.current.delete(userId);
     }
   };
 
