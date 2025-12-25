@@ -11,6 +11,7 @@ import TestList from "./components/TestList";
 import TakeTest from "./pages/TakeTest";
 import TestResult from "./pages/TestResult";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 import TermsAndConditions from "./pages/TermsAndConditions"
 import NotFound from "./pages/NotFound";
@@ -27,6 +28,7 @@ const App = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/signup" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:username" element={<UserProfile />} />
             <Route path="/tests" element={<TestList />} />
