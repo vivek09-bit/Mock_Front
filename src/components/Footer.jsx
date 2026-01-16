@@ -10,10 +10,10 @@ const Footer = () => {
 
         {/* 🔗 Middle Section - Social Media Links */}
         <div className="flex space-x-5 my-3 md:my-0">
-          <SocialLink href="#" icon={<FaTwitter />} />
+          {/* <SocialLink href="#" icon={<FaTwitter />} />
           <SocialLink href="#" icon={<FaLinkedin />} />
           <SocialLink href="#" icon={<FaGithub />} />
-          <SocialLink href="#" icon={<FaInstagram />} />
+          <SocialLink href="#" icon={<FaInstagram />} /> */}
         </div>
 
         {/* 💙 Right Section - Credits */}
