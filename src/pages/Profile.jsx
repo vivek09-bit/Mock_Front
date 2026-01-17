@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
+import { ThemeContext } from '../context/ThemeContext';
 
 const Profile = () => {
     const [userData, setUserData] = useState(null);
@@ -11,12 +12,13 @@ const Profile = () => {
         profilePic: null,
     });
     const [error, setError] = useState('');
+    const { apiBase } = useContext(ThemeContext);
 
     // Fetch user profile data
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (token) {
-            axios.get('https://mock-backend-8zgl.onrender.com/api/auth/profile', {
+            if (token) {
+                    axios.get(`${apiBase}/api/auth/profile`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,  // Send token in Authorization header
                 }
@@ -47,7 +49,7 @@ const Profile = () => {
         formData.append('profile', newProfile.profile);
         if (newProfile.profilePic) formData.append('profilePic', newProfile.profilePic);
 
-        axios.put('https://mock-backend-8zgl.onrender.com/api/auth/profile', formData, {
+        axios.put(`${apiBase}/api/auth/profile`, formData, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'multipart/form-data',

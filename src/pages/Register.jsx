@@ -51,7 +51,9 @@ const Register = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post("https://mock-backend-8zgl.onrender.com/api/auth/register", formData);
+      const base = import.meta.env.VITE_BACKEND || "";
+      console.log("API base:", base);
+      const response = await axios.post(`${base}/api/auth/register`, formData);
       setSuccess(response.data.message);
       setFormData({
         name: "",
@@ -71,7 +73,7 @@ const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-teal-400 to-teal-600 p-6">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-teal-50 to-teal-100 p-6">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold text-center text-teal-700">Create an Account</h2>
 
@@ -105,7 +107,7 @@ const Register = () => {
             />
             <label className="text-sm text-gray-600">
               I accept the{" "}
-              <a href="#" className="text-teal-500 font-medium">
+              <a href="/page/terms-portal" className="text-teal-500 font-medium">
                 Terms & Conditions
               </a>
             </label>

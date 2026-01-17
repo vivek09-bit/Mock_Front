@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
+import { ThemeContext } from "../context/ThemeContext";
 
 const ForgetPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const { apiBase } = useContext(ThemeContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -12,7 +14,7 @@ const ForgetPassword = () => {
     setError("");
 
     try {
-      const response = await axios.post("https://mock-backend-8zgl.onrender.com/api/auth/forgot-password", { email });
+      const response = await axios.post(`${apiBase}/api/auth/forgot-password`, { email });
       setMessage(response.data.message);
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong. Try again.");

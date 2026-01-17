@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ThemeContext } from "../context/ThemeContext";
 
 const TakeTest = () => {
   const { testId } = useParams();
@@ -17,14 +18,16 @@ const TakeTest = () => {
   const [showGuidelines, setShowGuidelines] = useState(true);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
 
+  const { apiBase } = useContext(ThemeContext);
+
   // Fetch Test and User Details
   useEffect(() => {
     const fetchTestAndUser = async () => {
       try {
         const [testRes, userRes] = await Promise.all([
-          axios.get(`https://mock-backend-8zgl.onrender.com/api/test/${testId}`),
+          axios.get(`${apiBase}/api/test/${testId}`),
           token
-            ? axios.get("https://mock-backend-8zgl.onrender.com/api/auth/me", {
+            ? axios.get(`${apiBase}/api/auth/me`, {
                 headers: { Authorization: `Bearer ${token}` },
               })
             : Promise.reject("User authentication required."),
@@ -96,7 +99,7 @@ const TakeTest = () => {
     if (!user) return setError("User not authenticated.");
 
     try {
-      const response = await axios.post("https://mock-backend-8zgl.onrender.com/api/test/submit", {
+      const response = await axios.post(`${apiBase}/api/test/submit`, {
         testId,
         userId: user.user._id,
         answers,

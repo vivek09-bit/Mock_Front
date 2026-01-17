@@ -11,6 +11,9 @@ import TestList from "./components/TestList";
 import TakeTest from "./pages/TakeTest";
 import TestResult from "./pages/TestResult";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
+import TermsAndConditions from "./pages/TermsAndConditions"
 import NotFound from "./pages/NotFound";
 import Tping from './pages/Tping'; // Import the Tping component
 import AboutUs from './components/About'; // Import the AboutUs component
@@ -29,17 +32,26 @@ const App = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/signup" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:username" element={<UserProfile />} />
             <Route path="/tests" element={<TestList />} />
             <Route path="/take-test/:testId" element={<TakeTest />} />
             <Route path='Test-Submit' element={<TestResult />} />
             <Route path="*" element={<NotFound />} /> 
+<<<<<<< HEAD
             <Route path="/typing" element={<Tping />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path='/contact' element={<ContactForm />} />
             <Route path="/FAQsPage" element={<FAQsPage />} /> {/* Add FAQs route */}
 
+=======
+
+
+            {/* Infomational Routes */}
+            <Route path='/page/terms-portal' element={< TermsAndConditions/>} />
+            
+>>>>>>> 8ba15d5fa63eb0e40cf4554b46cf9606a710d7bd
           </Routes>
         </main>
         <Footer />
