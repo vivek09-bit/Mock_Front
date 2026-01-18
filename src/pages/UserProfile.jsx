@@ -1,16 +1,19 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
 import { FaSignOutAlt, FaCheckCircle } from "react-icons/fa"; 
+import UserAnalytics from "../components/UserAnalytics";
 
 const UserProfile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const location = useLocation();
   const [testRecords, setTestRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || "history"); // "history" or "analytics"
 
   const { apiBase } = useContext(ThemeContext);
   const inFlight = useRef(new Set());
@@ -67,9 +70,20 @@ const UserProfile = () => {
       console.log("Fetching user tests", { userId, url, hasToken: !!token });
 
       const response = await axios.get(url, { headers });
-      console.log("Fetch user tests response:", response?.status, response?.data?.length ?? null);
-      setTestRecords(response.data);
+      console.log("Fetch user tests response:", response?.status, response?.data);
+      const records = response.data.records || response.data || [];
+      if (Array.isArray(records)) {
+        setTestRecords(records);
+      } else {
+        console.error("Expected array of records but got:", typeof records);
+        setTestRecords([]);
+      }
     } catch (err) {
+      if (err.response?.status === 404) {
+        // Expected for new users (until backend restart)
+        setTestRecords([]);
+        return;
+      }
       console.error("Test fetch failed:", {
         status: err.response?.status,
         data: err.response?.data,
@@ -100,9 +114,9 @@ const UserProfile = () => {
           </div>
         ) : user ? (
           <div className="flex flex-col items-center text-center">
-            {/* Profile Image */}
+            {/* Profile Image - Static to prevent load errors */}
             <img
-              src={user.profileURL || "/assets/adventurer-1739115902517.svg"}
+              src="/assets/adventurer-1739115902517.svg"
               alt="Profile"
               className="w-32 h-32 rounded-full border-4 border-gray-300 shadow-md"
             />
@@ -121,28 +135,66 @@ const UserProfile = () => {
               }</p>
             </div>
 
-            {/* Test History Section */}
-            <div className="mt-6 w-full">
-              <h3 className="text-xl font-semibold mb-2 border-b pb-2">📚 Test History</h3>
-              {testRecords.length > 0 ? (
-                <ul className="space-y-4">
-                  {testRecords.map((test, index) => (
-                    <li key={index} className="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-lg text-black">{test.testDetails.testName}</p>
-                        <p className="text-sm text-gray-600">Best Score: <span className="text-green-600">{test.bestScore}</span></p>
-                        <p className="text-sm text-gray-600">Attempts: {test.attempts.length}</p>
-                      </div>
-                      {test.bestScore >= test.testDetails.passingScore ? (
-                        <FaCheckCircle className="text-green-500 text-2xl" />
-                      ) : (
-                        <span className="text-red-500 text-sm">Retry Needed</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+            {/* Tabs for Test History & Analytics */}
+            <div className="mt-8 w-full">
+              <div className="flex justify-center space-x-4 border-b border-gray-300 pb-2 mb-4">
+                <button
+                  onClick={() => setActiveTab("history")}
+                  className={`px-4 py-2 font-semibold text-lg transition-colors ${
+                    activeTab === "history"
+                      ? "text-teal-600 border-b-2 border-teal-600"
+                      : "text-gray-500 hover:text-teal-500"
+                  }`}
+                >
+                  📜 Test History
+                </button>
+                <button
+                  onClick={() => setActiveTab("analytics")}
+                  className={`px-4 py-2 font-semibold text-lg transition-colors ${
+                    activeTab === "analytics"
+                      ? "text-teal-600 border-b-2 border-teal-600"
+                      : "text-gray-500 hover:text-teal-500"
+                  }`}
+                >
+                  📊 Analytics
+                </button>
+              </div>
+
+              {activeTab === "history" ? (
+                <>
+                  <h3 className="text-xl font-semibold mb-2">📚 Test History</h3>
+                  {testRecords.length > 0 ? (
+                    <ul className="space-y-4">
+                      {testRecords.map((test, index) => {
+                        if (!test) return null;
+                        const testName = test?.testDetails?.testName || "Unknown Test";
+                        const bestScore = test?.bestScore || 0;
+                        const passingScore = test?.testDetails?.passingScore || 0;
+                        const attemptsCount = test?.attempts?.length || 0;
+                        const passed = test?.testDetails && bestScore >= passingScore;
+
+                        return (
+                          <li key={index} className="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center">
+                            <div>
+                              <p className="font-medium text-lg text-black">{testName}</p>
+                              <p className="text-sm text-gray-600">Best Score: <span className="text-green-600">{bestScore}</span></p>
+                              <p className="text-sm text-gray-600">Attempts: {attemptsCount}</p>
+                            </div>
+                            {passed ? (
+                              <FaCheckCircle className="text-green-500 text-2xl" />
+                            ) : (
+                              <span className="text-red-500 text-sm">Retry Needed</span>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <p className="text-gray-500">No test records found.</p>
+                  )}
+                </>
               ) : (
-                <p className="text-gray-500">No test records found.</p>
+                <UserAnalytics testRecords={testRecords} />
               )}
             </div>
 
