@@ -56,7 +56,7 @@ const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
 
   return (
-    <div className="max-w-2xl mx-auto my-12 bg-white rounded-xl shadow-lg p-8">
+    <div className="max-w-2xl mx-auto my-12 bg-gradient-to-r from-teal-50 to-teal-100 rounded-xl shadow-lg p-8">
       <h2 className="text-3xl font-bold text-teal-800 mb-8 text-center">
         Frequently Asked Questions
       </h2>

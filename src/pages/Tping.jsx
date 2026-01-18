@@ -579,9 +579,9 @@ export default function TypingTest() {
 
   // UI
   return (
-    <div className="w-screen min-h-screen bg-gray-900 flex items-center justify-center p-6">
-      <div className="w-full max-w-3xl bg-gray-900 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
-        <h1 className="text-4xl font-bold text-teal-400 text-center">Typing Test</h1>
+    <div className="w-screen min-h-screen bg-gradient-to-r from-teal-50 to-teal-100 flex items-center justify-center p-6">
+      <div className="w-full max-w-3xl bg-teal-800 text-white p-6 rounded-lg shadow-lg flex flex-col gap-6">
+        <h1 className="text-4xl font-bold text-teal-300 text-center">Typing Test</h1>
         {/* Controls */}
         <div className="flex flex-wrap justify-center gap-6">
           {/* Language Picker */}

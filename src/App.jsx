@@ -37,15 +37,17 @@ const App = () => {
             <Route path="/profile/:username" element={<UserProfile />} />
             <Route path="/tests" element={<TestList />} />
             <Route path="/take-test/:testId" element={<TakeTest />} />
-            <Route path="Test-Submit" element={<TestResult />} />
-            <Route path="*" element={<NotFound />} />
-            <Route path="/typing" element={<Tping />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/contact" element={<ContactForm />} />
-            <Route path="/faqspage" element={<FAQsPage />} />{" "}
-            {/* Add FAQs route */}
+            <Route path='/Test-Submit' element={<TestResult />} />
+            <Route path='/faqspage' element={<FAQsPage />} />
+            <Route path='/typing' element={<Tping />} />
+            <Route path='/about' element={<AboutUs />} />
+            <Route path='/contact' element={<ContactForm />} />
+            <Route path="*" element={<NotFound />} /> 
+
+
             {/* Infomational Routes */}
-            <Route path="/page/terms-portal" element={<TermsAndConditions />} />
+            <Route path='/page/terms-portal' element={< TermsAndConditions/>} />
+            
           </Routes>
         </main>
         <Footer />

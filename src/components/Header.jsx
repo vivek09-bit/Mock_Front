@@ -43,16 +43,12 @@ function Header() {
                 Typing
               </Link>
             </li>
-            <li>
-              <Link to="/study-material" className="hover:text-gray-200">
-                Study Material
-              </Link>
-            </li>
+            
             <li>
               <Link to="/faqspage" className="hover:text-gray-200">
                 FAQ
               </Link>
-            </li>
+            </li> 
             <li>
               <Link to="/about" className="hover:text-gray-200">
                 About Us

@@ -3,7 +3,7 @@ import React from "react";
 import aboutUsImage from '../assets/file_000000001f1c61f8aad746aa9e98a5b3.png';
 
 const AboutUs = () => (
-  <section className="bg-gray-50 py-14 px-4 md:px-0">
+  <section className="bg-gradient-to-r from-teal-50 to-teal-100 py-14 px-4 md:px-0">
     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center bg-white shadow-lg rounded-xl overflow-hidden">
       {/* Left: Textual Content */}
       <div className="flex-1 px-8 py-10 md:p-14">
