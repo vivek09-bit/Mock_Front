@@ -41,16 +41,10 @@ const ContactForm = () => {
               <span style={styles.iconPhone}></span>
               <div>
                 <span style={styles.infoTitle}>Phone</span>
-                <div style={styles.infoDetail}>+1 123 456 7890</div>
+                <div style={styles.infoDetail}>+91-73984-82673</div>
               </div>
             </div>
-            <div style={styles.infoRow}>
-              <span style={styles.iconLocation}></span>
-              <div>
-                <span style={styles.infoTitle}>100 Innovation</span>
-                <div style={styles.infoDetail}>Way, SF, CA 94107</div>
-              </div>
-            </div>
+            
           </div>
         </div>
 
@@ -104,9 +98,10 @@ const ContactForm = () => {
 // Inline styles
 const styles = {
   root: {
+    
     minHeight: "100vh",
     minWidth: "100vw",
-    background: "linear-gradient(135deg, #197a8e 0%, #f7fdfa 100%)",
+    background: "linear-gradient(to right, #f0fdfa, #ccfbf1)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",

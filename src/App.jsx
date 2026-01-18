@@ -38,20 +38,16 @@ const App = () => {
             <Route path="/tests" element={<TestList />} />
             <Route path="/take-test/:testId" element={<TakeTest />} />
             <Route path='Test-Submit' element={<TestResult />} />
+            <Route path='faq' element={<FAQsPage />} />
+            <Route path='typing' element={<Tping />} />
+            <Route path='about' element={<AboutUs />} />
+            <Route path='contact' element={<ContactForm />} />
             <Route path="*" element={<NotFound />} /> 
-<<<<<<< HEAD
-            <Route path="/typing" element={<Tping />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path='/contact' element={<ContactForm />} />
-            <Route path="/FAQsPage" element={<FAQsPage />} /> {/* Add FAQs route */}
-
-=======
 
 
             {/* Infomational Routes */}
             <Route path='/page/terms-portal' element={< TermsAndConditions/>} />
             
->>>>>>> 8ba15d5fa63eb0e40cf4554b46cf9606a710d7bd
           </Routes>
         </main>
         <Footer />

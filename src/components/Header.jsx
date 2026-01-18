@@ -43,11 +43,7 @@ function Header() {
                 Typing
               </Link>
             </li>
-            <li>
-              <Link to="/study-material" className="hover:text-gray-200">
-                Study Material
-              </Link>
-            </li>
+            
             <li>
               <Link to="/faq" className="hover:text-gray-200">
                 FAQ
@@ -150,25 +146,11 @@ function Header() {
           </li>
           <li>
             <Link
-              to="/study-material"
-              className="block hover:text-teal-200"
-              onClick={closeSlider}
-            >
-              Study Material
-            </Link>
-          </li>
-          <li>
-<<<<<<< HEAD
-            <Link to="/FAQsPage" className="hover:text-gray-200">
-              FAQs
-=======
-            <Link
               to="/faq"
               className="block hover:text-teal-200"
               onClick={closeSlider}
             >
               FAQ
->>>>>>> 8ba15d5fa63eb0e40cf4554b46cf9606a710d7bd
             </Link>
           </li>
           <li>
