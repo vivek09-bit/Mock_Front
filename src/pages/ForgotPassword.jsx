@@ -22,7 +22,7 @@ const ForgetPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-teal-400 to-teal-600 p-6">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-teal-50 to-teal-100 p-6">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold text-center text-teal-700">Forgot Password</h2>
 
@@ -31,8 +31,9 @@ const ForgetPassword = () => {
         {error && <p className="text-red-500 text-center mt-2">{error}</p>}
 
         {/* Forget Password Form */}
-        <form onSubmit={handleSubmit} className="mt-6">
-          <div className="mb-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div>
+            <label className="block text-gray-700 mb-1">Email Address</label>
             <input
               type="email"
               name="email"
@@ -47,7 +48,7 @@ const ForgetPassword = () => {
           {/* Send Reset Email Button */}
           <button
             type="submit"
-            className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition duration-300"
+            className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition duration-300 font-semibold"
           >
             Send Reset Link
           </button>
