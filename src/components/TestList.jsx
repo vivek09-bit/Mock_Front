@@ -64,9 +64,30 @@ const TestList = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-        Available Tests
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold text-gray-800">
+          Available Tests
+        </h2>
+        {(() => {
+          try {
+            const userStr = localStorage.getItem("user");
+            const user = userStr ? JSON.parse(userStr) : null;
+            if (user && user.username) {
+              return (
+                <button
+                  onClick={() => navigate(`/profile/${user.username}`, { state: { activeTab: "analytics" } })}
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-all flex items-center"
+                >
+                  📊 View My Analytics
+                </button>
+              );
+            }
+          } catch (e) {
+            console.error("Error parsing user for analytics button:", e);
+          }
+          return null;
+        })()}
+      </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tests.map((test) => (

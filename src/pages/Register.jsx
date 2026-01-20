@@ -3,12 +3,17 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
+  // Steps: 1 = Email Input, 2 = Verify OTP, 3 = Complete Profile
+  const [step, setStep] = useState(1);
+  const [verificationToken, setVerificationToken] = useState(null);
+
   const [formData, setFormData] = useState({
     name: "",
     username: "",
     email: "",
     password: "",
     phone: "",
+    otp: "",
     termsAccepted: false,
   });
 
@@ -17,56 +22,86 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const base = import.meta.env.VITE_BACKEND || "";
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
-  const validateForm = () => {
-    const { name, username, email, password, phone, termsAccepted } = formData;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^[0-9]{10}$/;
-
-    if (!name || !username || !email || !password || !phone)
-      return "All fields are required.";
-    if (!emailRegex.test(email)) return "Invalid email format.";
-    if (password.length < 6) return "Password must be at least 6 characters.";
-    if (!phoneRegex.test(phone)) return "Phone number must be 10 digits.";
-    if (!termsAccepted) return "You must accept the Terms & Conditions.";
-
-    return null;
-  };
-
-  const handleSubmit = async (e) => {
+  // Step 1: Send Verification Code
+  const handleSendCode = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
+    setLoading(true);
 
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
+    if (!formData.email) {
+      setError("Please enter your email.");
+      setLoading(false);
       return;
     }
 
     try {
-      setLoading(true);
-      const base = import.meta.env.VITE_BACKEND || "";
-      console.log("API base:", base);
-      const response = await axios.post(`${base}/api/auth/register`, formData);
-      setSuccess(response.data.message);
-      setFormData({
-        name: "",
-        username: "",
-        email: "",
-        password: "",
-        phone: "",
-        termsAccepted: false,
-      });
-      setTimeout(() => navigate("/login"), 1500);
+      await axios.post(`${base}/api/verification/initiate`, { email: formData.email });
+      setSuccess("Verification code sent! Please check your email.");
+      setStep(2);
     } catch (err) {
-      const msg = err?.response?.data?.message || "Something went wrong. Please try again.";
-      setError(msg);
+      setError(err.response?.data?.message || "Failed to send code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: Verify OTP
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${base}/api/verification/verify`, {
+        email: formData.email,
+        otp: formData.otp,
+      });
+      
+      setVerificationToken(response.data.verificationToken);
+      setSuccess("Email verified successfully! Please complete your profile.");
+      setStep(3);
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid or expired code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 3: Complete Registration
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Validate remaining fields
+    const { name, username, password, phone, termsAccepted } = formData;
+    if (!name || !username || !password || !phone) return setError("All fields are required.");
+    if (password.length < 6) return setError("Password must be at least 6 characters.");
+    if (!termsAccepted) return setError("You must accept the Terms & Conditions.");
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post(`${base}/api/auth/register`, {
+        ...formData,
+        verificationToken, // Include the proof of verification
+      });
+
+      setSuccess(response.data.message);
+      // Clear sensitive data
+      setFormData({ ...formData, password: "", otp: "" });
+      
+      // Delay to show success message before redirect
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed.");
     } finally {
       setLoading(false);
     }
@@ -75,88 +110,143 @@ const Register = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-teal-50 to-teal-100 p-6">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold text-center text-teal-700">Create an Account</h2>
+        <h2 className="text-2xl font-semibold text-center text-teal-700 mb-6">
+          {step === 1 ? "Sign Up" : step === 2 ? "Verify Email" : "Complete Profile"}
+        </h2>
 
-        {error && <p className="text-red-500 text-center mt-2">{error}</p>}
-        {success && <p className="text-green-500 text-center mt-2">{success}</p>}
+        {error && <p className="text-red-500 text-center mb-4 text-sm font-medium">{error}</p>}
+        {success && <p className="text-green-500 text-center mb-4 text-sm font-medium">{success}</p>}
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {["name", "username", "email", "password", "phone"].map((field) => (
+        {/* STEP 1: Email Input */}
+        {step === 1 && (
+          <form onSubmit={handleSendCode} className="space-y-4">
+            <div>
+              <label className="block text-gray-700 mb-1">Email Address</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                required
+              />
+            </div>
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full py-3 rounded-lg text-white font-semibold transition ${loading ? "bg-gray-400" : "bg-teal-600 hover:bg-teal-700"}`}
+            >
+              {loading ? "Sending..." : "Send Verification Code"}
+            </button>
+            <div className="text-center mt-2">
+              <a href="/login" className="text-teal-500 text-sm">Already have an account? Login</a>
+            </div>
+          </form>
+        )}
+
+        {/* STEP 2: OTP Input */}
+        {step === 2 && (
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+             <div className="text-center text-gray-600 text-sm mb-4">
+              We sent a code to <strong>{formData.email}</strong>
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-1">Enter Verification Code</label>
+              <input
+                type="text"
+                name="otp"
+                placeholder="6-digit code"
+                value={formData.otp}
+                onChange={handleChange}
+                maxLength="6"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none text-center tracking-widest text-xl"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full py-3 rounded-lg text-white font-semibold transition ${loading ? "bg-gray-400" : "bg-teal-600 hover:bg-teal-700"}`}
+            >
+              {loading ? "Verifying..." : "Verify Email"}
+            </button>
+            
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="w-full mt-2 text-sm text-gray-500 hover:text-gray-700"
+            >
+              Change Email
+            </button>
+          </form>
+        )}
+
+        {/* STEP 3: Complete Profile */}
+        {step === 3 && (
+          <form onSubmit={handleRegister} className="space-y-4">
             <input
-              key={field}
-              type={field === "password" ? "password" : field === "email" ? "email" : "text"}
-              name={field}
-              placeholder={
-                field.charAt(0).toUpperCase() + field.slice(1).replace("name", "Full Name")
-              }
-              value={formData[field]}
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={formData.name}
               onChange={handleChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
               required
             />
-          ))}
-
-          <div className="flex items-center">
             <input
-              type="checkbox"
-              name="termsAccepted"
-              checked={formData.termsAccepted}
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formData.username}
               onChange={handleChange}
-              className="mr-2"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
               required
             />
-            <label className="text-sm text-gray-600">
-              I accept the{" "}
-              <a href="/page/terms-portal" className="text-teal-500 font-medium">
-                Terms & Conditions
-              </a>
-            </label>
-          </div>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password (min 6 chars)"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+              required
+            />
+            <input
+              type="text"
+              name="phone"
+              placeholder="Phone Number"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+              required
+            />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-3 rounded-lg transition duration-300 flex justify-center items-center ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-teal-600 hover:bg-teal-700 text-white"
-            }`}
-          >
-            {loading ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5 mr-2 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8z"
-                  ></path>
-                </svg>
-                Registering...
-              </>
-            ) : (
-              "Sign Up"
-            )}
-          </button>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                name="termsAccepted"
+                checked={formData.termsAccepted}
+                onChange={handleChange}
+                className="mr-2"
+                required
+              />
+              <label className="text-sm text-gray-600">
+                I accept the <a href="/page/terms-portal" className="text-teal-500 font-medium">Terms & Conditions</a>
+              </label>
+            </div>
 
-          <div className="text-center mt-2">
-            <a href="/login" className="text-teal-500 text-sm">
-              Already have an account? Login
-            </a>
-          </div>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full py-3 rounded-lg text-white font-semibold transition ${loading ? "bg-gray-400" : "bg-teal-600 hover:bg-teal-700"}`}
+            >
+              {loading ? "Creating Account..." : "Complete Sign Up"}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

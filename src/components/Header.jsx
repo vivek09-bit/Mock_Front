@@ -4,11 +4,19 @@ import { Link, useNavigate } from "react-router-dom";
 function Header() {
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const token = localStorage.getItem("authToken");
-  const user = JSON.parse(localStorage.getItem("user"));
+  let user = null;
+  try {
+    const userStr = localStorage.getItem("user");
+    user = userStr ? JSON.parse(userStr) : null;
+  } catch (e) {
+    console.error("Error parsing user in Header:", e);
+  }
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
     setIsSliderOpen(false);
     navigate("/login/");
