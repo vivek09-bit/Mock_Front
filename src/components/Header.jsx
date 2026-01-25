@@ -42,7 +42,7 @@ function Header() {
           {/* Navigation Links */}
           <ul className="hidden md:flex space-x-6">
             <li>
-              <Link to="/tests" className="hover:text-gray-200">
+              <Link to="/dashboard" className="hover:text-gray-200">
                 Mock Tests
               </Link>
             </li>
@@ -136,7 +136,7 @@ function Header() {
         <ul className="flex flex-col space-y-4 pt-16 px-6">
           <li>
             <Link
-              to="/tests"
+              to="/dashboard"
               className="block hover:text-teal-200"
               onClick={closeSlider}
             >
