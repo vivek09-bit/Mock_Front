@@ -30,40 +30,49 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-6">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow">
-        <h2 className="text-2xl font-semibold text-center mb-4">Reset Password</h2>
-        {message && <p className="text-green-600 text-center">{message}</p>}
-        {error && <p className="text-red-600 text-center">{error}</p>}
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-teal-50 to-teal-100 p-6">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-semibold text-center text-teal-700 mb-6">Reset Password</h2>
+        
+        {message && <p className="text-green-500 text-center mb-4 font-medium">{message}</p>}
+        {error && <p className="text-red-500 text-center mb-4 font-medium">{error}</p>}
 
-        <form onSubmit={handleSubmit} className="mt-4">
-          <div className="mb-3">
+        {/* Improved Form Layout */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-gray-700 mb-1">New Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="New password"
-              className="w-full p-2 border rounded"
+              placeholder="Min 6 chars"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
               required
             />
           </div>
 
-          <div className="mb-3">
+          <div>
+            <label className="block text-gray-700 mb-1">Confirm Password</label>
             <input
               type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Confirm password"
-              className="w-full p-2 border rounded"
+              placeholder="Re-enter password"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
               required
             />
           </div>
 
-          <button className="w-full bg-teal-600 text-white py-2 rounded" type="submit">Reset Password</button>
+          <button 
+            className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition duration-300 font-semibold" 
+            type="submit"
+          >
+            Reset Password
+          </button>
         </form>
 
-        <div className="text-center mt-3">
-          <a href="/login" className="text-teal-500">Back to Login</a>
+        <div className="text-center mt-4">
+          <a href="/login" className="text-teal-500 text-sm hover:underline">Back to Login</a>
         </div>
       </div>
     </div>

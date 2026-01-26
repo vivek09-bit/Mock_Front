@@ -160,7 +160,7 @@ const TakeTest = () => {
         {/* Question */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold">
-            {currentQuestionIndex + 1}. {currentQuestion.questionText}
+            {currentQuestionIndex + 1}. {currentQuestion.question?.text || currentQuestion.questionText}
           </h3>
         </div>
 
@@ -171,9 +171,9 @@ const TakeTest = () => {
               <input
                 type="radio"
                 name={`question-${currentQuestion._id}`}
-                value={idx}
-                checked={answers[currentQuestion._id] === idx}
-                onChange={() => handleAnswerChange(idx)}
+                value={option}
+                checked={answers[currentQuestion._id] === option}
+                onChange={() => handleAnswerChange(option)}
                 className="mr-2 w-5 h-5"
               />
               <span>{option}</span>

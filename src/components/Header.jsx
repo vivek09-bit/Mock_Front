@@ -4,11 +4,19 @@ import { Link, useNavigate } from "react-router-dom";
 function Header() {
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const token = localStorage.getItem("authToken");
-  const user = JSON.parse(localStorage.getItem("user"));
+  let user = null;
+  try {
+    const userStr = localStorage.getItem("user");
+    user = userStr ? JSON.parse(userStr) : null;
+  } catch (e) {
+    console.error("Error parsing user in Header:", e);
+  }
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
     setIsSliderOpen(false);
     navigate("/login/");
@@ -34,7 +42,7 @@ function Header() {
           {/* Navigation Links */}
           <ul className="hidden md:flex space-x-6">
             <li>
-              <Link to="/tests" className="hover:text-gray-200">
+              <Link to="/dashboard" className="hover:text-gray-200">
                 Mock Tests
               </Link>
             </li>
@@ -128,7 +136,7 @@ function Header() {
         <ul className="flex flex-col space-y-4 pt-16 px-6">
           <li>
             <Link
-              to="/tests"
+              to="/dashboard"
               className="block hover:text-teal-200"
               onClick={closeSlider}
             >

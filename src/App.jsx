@@ -15,10 +15,12 @@ import ResetPassword from "./pages/ResetPassword";
 
 import TermsAndConditions from "./pages/TermsAndConditions";
 import NotFound from "./pages/NotFound";
-import Tping from "./pages/Tping"; // Import the Tping component
-import AboutUs from "./components/About"; // Import the AboutUs component
-import ContactForm from "./pages/ContactForm"; // Import the ContactForm component
-import FAQsPage from "./pages/FAQsPage"; // Import the FAQsPage component
+import Tping from './pages/Tping'; // Import the Tping component
+import AboutUs from './components/About'; // Import the AboutUs component
+import ContactForm from './pages/ContactForm'; // Import the ContactForm component
+import FAQsPage from './pages/FAQsPage'; // Import the FAQsPage component
+import ExamDashboard from './pages/ExamDashboard'; // [NEW] Exam Dashboard
+import TestInstruction from './pages/TestInstruction'; // [NEW] Instruction Page
 
 const App = () => {
   return (
@@ -35,7 +37,9 @@ const App = () => {
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:username" element={<UserProfile />} />
+            <Route path="/dashboard" element={<ExamDashboard />} /> {/* [NEW] Dashboard */}
             <Route path="/tests" element={<TestList />} />
+            <Route path="/test/instruction/:testId" element={<TestInstruction />} /> {/* [NEW] Instructions */}
             <Route path="/take-test/:testId" element={<TakeTest />} />
             <Route path='/Test-Submit' element={<TestResult />} />
             <Route path='/faqspage' element={<FAQsPage />} />
