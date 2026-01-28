@@ -19,11 +19,14 @@ const ExamDashboard = () => {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
-    if (user?._id) {
-      fetchUserTests(user._id);
-    } else {
-      setLoading(false);
+    const token = localStorage.getItem("authToken");
+
+    if (!user?._id || !token) {
+      navigate("/login");
+      return;
     }
+    
+    fetchUserTests(user._id);
   }, []);
 
   const fetchUserTests = async (userId) => {
@@ -37,6 +40,9 @@ const ExamDashboard = () => {
       setTestRecords(Array.isArray(records) ? records : []);
     } catch (err) {
       console.error("Dashboard fetch failed:", err);
+      if (err.response?.status === 401) {
+        navigate("/login");
+      }
     } finally {
       setLoading(false);
       inFlight.current.delete(userId);
