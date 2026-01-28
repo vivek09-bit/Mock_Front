@@ -25,7 +25,9 @@ const TakeTest = () => {
     const fetchTestAndUser = async () => {
       try {
         const [testRes, userRes] = await Promise.all([
-          axios.get(`${apiBase}/api/test/${testId}`),
+          axios.get(`${apiBase}/api/test/${testId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
           token
             ? axios.get(`${apiBase}/api/auth/me`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -103,6 +105,8 @@ const TakeTest = () => {
         testId,
         userId: user.user._id,
         answers,
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       navigate("/Test-Submit", { state: { result: response.data } });
     } catch {

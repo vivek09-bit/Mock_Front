@@ -20,7 +20,9 @@ const TestInstruction = () => {
     
     const fetchTestDetails = async () => {
       try {
-        const response = await axios.get(`${apiBase}/api/test/${testId}`);
+        const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.get(`${apiBase}/api/test/${testId}`, { headers });
         setTest(response.data);
       } catch (error) {
         console.error("Error fetching test details:", error);

@@ -4,29 +4,60 @@ import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import KPICard from '../components/KPICard';
 import TestHistoryTable from '../components/TestHistoryTable';
+import GoalSelector from '../components/GoalSelector'; // Import GoalSelector
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
   BarChart, Bar, Cell, Legend
 } from 'recharts';
-import { FaClipboardList, FaTrophy, FaCheckCircle, FaStar, FaChevronRight } from 'react-icons/fa';
+import { FaClipboardList, FaTrophy, FaCheckCircle, FaStar, FaChevronRight, FaPlus } from 'react-icons/fa';
 
 const ExamDashboard = () => {
   const [testRecords, setTestRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showGoalModal, setShowGoalModal] = useState(false); // State for modal
   const { apiBase } = useContext(ThemeContext);
   const navigate = useNavigate();
   const inFlight = useRef(new Set());
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
     const token = localStorage.getItem("authToken");
 
-    if (!user?._id || !token) {
+    if (!token) {
+      console.warn("No token found, redirecting to login");
       navigate("/login");
       return;
     }
-    
-    fetchUserTests(user._id);
+
+    const initializeDashboard = async () => {
+       let user = JSON.parse(localStorage.getItem('user')) || {};
+       
+       // If user ID is missing, try to recover it from the server
+       if (!user._id) {
+           console.warn("User ID missing. Attempting to recover session...");
+           try {
+               const headers = { Authorization: `Bearer ${token}` };
+               const response = await axios.get(`${apiBase}/api/auth/me`, { headers });
+               
+               if (response.data && response.data.user) {
+                   user = response.data.user;
+                   // Re-save to local storage to fix the state
+                   localStorage.setItem('user', JSON.stringify(user));
+                   console.log("Session recovered!", user);
+               }
+           } catch (error) {
+               console.error("Failed to recover session:", error);
+               // If we can't get the user, we might need to re-login
+               // navigate("/login"); // Optional: strict mode
+               return; 
+           }
+       }
+       
+       if (user._id) {
+           fetchUserTests(user._id);
+       }
+    };
+
+    initializeDashboard();
   }, []);
 
   const fetchUserTests = async (userId) => {
@@ -51,27 +82,64 @@ const ExamDashboard = () => {
 
   // Metrics calculation
   const totalTests = testRecords.length;
-  const avgScore = testRecords.length > 0 
+  
+  // Avg Score
+  const avgScore = totalTests > 0 
     ? Math.round(testRecords.reduce((acc, curr) => acc + (curr.bestScore || 0), 0) / totalTests) 
     : 0;
-  const passedTests = testRecords.filter(t => t.testDetails && t.bestScore >= t.testDetails.passingScore).length;
-  const accuracy = totalTests > 0 ? "68%" : "0%"; // Mocking for now, as it needs per-question data
-  const bestScore = testRecords.length > 0 ? Math.max(...testRecords.map(t => t.bestScore || 0)) : 0;
+    
+  // Best Score
+  const bestScore = totalTests > 0 ? Math.max(...testRecords.map(t => t.bestScore || 0)) : 0;
 
-  // Chart Data
+  // Real Accuracy Calculation
+  // Sum of all correct answers / Sum of all questions attempted (across best attempts)
+  const accuracyCalc = testRecords.reduce((acc, record) => {
+      // Find the best attempt (or last)
+      const attempt = record.attempts.reduce((prev, curr) => curr.score > prev.score ? curr : prev, record.attempts[0]);
+      if (!attempt) return acc;
+
+      const correctCount = attempt.questionsAttempted.filter(q => q.isCorrect).length;
+      return { 
+          correct: acc.correct + correctCount, 
+          total: acc.total + attempt.questionsAttempted.length 
+      };
+  }, { correct: 0, total: 0 });
+
+  const accuracy = accuracyCalc.total > 0 
+    ? Math.round((accuracyCalc.correct / accuracyCalc.total) * 100) + "%" 
+    : "0%";
+
+  // Aggregation by Subject (Category)
+  const subjectMap = testRecords.reduce((acc, record) => {
+      const cat = record.testId?.category || "General"; // Populated from backend
+      if (!acc[cat]) acc[cat] = { totalScore: 0, count: 0 };
+      acc[cat].totalScore += record.bestScore;
+      acc[cat].count += 1;
+      return acc;
+  }, {});
+
+  const subjectData = Object.keys(subjectMap).map((key, index) => ({
+      name: key.charAt(0).toUpperCase() + key.slice(1),
+      score: Math.round(subjectMap[key].totalScore / subjectMap[key].count),
+      fill: ['#3b82f6', '#10b981', '#f59e0b', '#6366f1'][index % 4]
+  }));
+
+  // Fallback if no data
+  if (subjectData.length === 0) {
+      subjectData.push({ name: 'No Data', score: 0, fill: '#cbd5e1' });
+  }
+
+  // Chart Data (Last 7 tests)
   const scoreTrendData = testRecords
-    .slice(-7)
-    .sort((a,b) => new Date(a.lastAttempted) - new Date(b.lastAttempted))
+    .slice(-7) // Take last 7
     .map(r => ({
       name: new Date(r.lastAttempted).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
       score: r.bestScore
     }));
-
-  const subjectData = [
-    { name: 'Quantitative', score: 65, fill: '#3b82f6' },
-    { name: 'Logical Reasoning', score: 78, fill: '#10b981' },
-    { name: 'Verbal Ability', score: 55, fill: '#f59e0b' },
-  ];
+  
+  // Sparkline Generators
+  const genSparkline = (field) => testRecords.slice(-6).map(r => ({ value: r[field] || 0 }));
+  const scoreSpark = testRecords.slice(-6).map(r => ({ value: r.bestScore }));
 
   if (loading) {
     return (
@@ -83,6 +151,16 @@ const ExamDashboard = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-slate-800">Dashboard Overview</h2>
+         <button 
+          onClick={() => setShowGoalModal(true)}
+          className="hidden md:flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-200 hover:shadow-xl hover:bg-blue-700 transition-all transform hover:-translate-y-0.5"
+        >
+          <FaPlus size={14} /> Start New Test
+        </button>
+      </div>
+
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard 
@@ -90,7 +168,7 @@ const ExamDashboard = () => {
           value={totalTests} 
           icon={<FaClipboardList />} 
           color="blue" 
-          chartData={[{value: 30}, {value: 45}, {value: 35}, {value: 50}, {value: 40}, {value: 60}]}
+          chartData={scoreSpark}
         />
         <KPICard 
           title="Avg Score" 
@@ -98,14 +176,14 @@ const ExamDashboard = () => {
           unit="%" 
           icon={<FaTrophy />} 
           color="green" 
-          chartData={[{value: 40}, {value: 55}, {value: 50}, {value: 70}, {value: 65}, {value: 72}]}
+          chartData={scoreSpark}
         />
         <KPICard 
           title="Accuracy" 
           value={accuracy} 
           icon={<FaCheckCircle />} 
           color="purple" 
-          chartData={[{value: 60}, {value: 65}, {value: 62}, {value: 68}, {value: 64}, {value: 68}]}
+          chartData={scoreSpark}
         />
         <KPICard 
           title="Best Score" 
@@ -113,7 +191,7 @@ const ExamDashboard = () => {
           unit="%" 
           icon={<FaStar />} 
           color="orange" 
-          chartData={[{value: 50}, {value: 70}, {value: 85}, {value: 80}, {value: 90}, {value: 90}]}
+          chartData={scoreSpark}
         />
       </div>
 
@@ -224,6 +302,27 @@ const ExamDashboard = () => {
         </div>
         <TestHistoryTable testRecords={testRecords.slice(0, 5)} showFilters={false} />
       </div>
+
+      {/* Floating Action Button (Mobile) or Header Button */}
+      <div className="fixed bottom-8 right-8 md:hidden">
+        <button 
+          onClick={() => setShowGoalModal(true)}
+          className="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+        >
+          <FaPlus size={24} />
+        </button>
+      </div>
+
+       {/* Goal Selector Modal */}
+       {showGoalModal && (
+        <GoalSelector 
+          onSelect={(category) => {
+            setShowGoalModal(false);
+            navigate(`/tests?category=${category}`);
+          }}
+          onClose={() => setShowGoalModal(false)}
+        />
+      )}
     </div>
   );
 };

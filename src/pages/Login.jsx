@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ThemeContext } from "../context/ThemeContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({ emailOrUsername: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { apiBase } = useContext(ThemeContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -46,7 +48,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        import.meta.env.VITE_BACKEND+"/api/auth/login",
+        `${apiBase}/api/auth/login`,
         formData
       );
 

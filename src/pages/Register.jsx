@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ThemeContext } from "../context/ThemeContext";
 
 const Register = () => {
   // Steps: 1 = Email Input, 2 = Verify OTP, 3 = Complete Profile
@@ -22,7 +23,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const base = import.meta.env.VITE_BACKEND || "";
+  const { apiBase } = useContext(ThemeContext);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -42,7 +43,7 @@ const Register = () => {
     }
 
     try {
-      await axios.post(`${base}/api/verification/initiate`, { email: formData.email });
+      await axios.post(`${apiBase}/api/verification/initiate`, { email: formData.email });
       setSuccess("Verification code sent! Please check your email.");
       setStep(2);
     } catch (err) {
@@ -59,7 +60,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${base}/api/verification/verify`, {
+      const response = await axios.post(`${apiBase}/api/verification/verify`, {
         email: formData.email,
         otp: formData.otp,
       });
@@ -89,7 +90,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${base}/api/auth/register`, {
+      const response = await axios.post(`${apiBase}/api/auth/register`, {
         ...formData,
         verificationToken, // Include the proof of verification
       });

@@ -8,40 +8,62 @@ import UserAnalytics from "../components/UserAnalytics";
 const UserProfile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
   const location = useLocation();
+  const [user, setUser] = useState(null);
   const [testRecords, setTestRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState(location.state?.activeTab || "history"); // "history" or "analytics"
+  
+  // Set default tab based on path or state
+  const isAnalyticsRoute = location.pathname === '/analytics';
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || (isAnalyticsRoute ? "analytics" : "history"));
 
   const { apiBase } = useContext(ThemeContext);
   const inFlight = useRef(new Set());
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    console.log("UserProfile effect", { username, storedUser });
+    // If routing to /analytics, force tab to analytics
+    if (isAnalyticsRoute) {
+        setActiveTab("analytics");
+    }
 
-    if (storedUser && storedUser.username === username) {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    console.log("UserProfile effect", { username, storedUser, path: location.pathname });
+
+    // Handle "me", "undefined", or missing username (mapped to authenticated user)
+    const isMe = !username || username === 'me' || username === 'undefined';
+
+    if (storedUser && (isMe ? true : storedUser.username === username)) {
       console.log("Using storedUser for profile", storedUser);
       setUser(storedUser);
       if (storedUser?._id) {
-        console.log("Calling fetchUserTests with storedUser._id", storedUser._id);
         fetchUserTests(storedUser._id);
       } else {
-        console.log("No storedUser._id, falling back to fetchUserProfile");
         fetchUserProfile();
       }
       setLoading(false);
     } else {
-      console.log("storedUser missing or username mismatch, fetching profile from API");
       fetchUserProfile();
     }
-  }, [username]);
+  }, [username, location.pathname]);
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get(`${apiBase}/api/auth/profile/${username}`);
+      const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+      let response;
+      
+      const isMe = !username || username === 'me' || username === 'undefined';
+      
+      if (isMe) {
+          if (!token) throw new Error("Authentication required");
+          response = await axios.get(`${apiBase}/api/auth/profile`, { 
+              headers: { Authorization: `Bearer ${token}` } 
+          });
+          if (response.data.user) response.data = response.data.user;
+      } else {
+          response = await axios.get(`${apiBase}/api/auth/profile/${username}`);
+      }
+
       console.log("fetchUserProfile response", { status: response.status, dataId: response.data?._id });
       setUser(response.data);
       if (response.data?._id) fetchUserTests(response.data._id);
