@@ -1,183 +1,222 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { ThemeContext } from '../context/ThemeContext'; // Import ThemeContext
-import GoalSelector from '../components/GoalSelector';
-import { FaFilter, FaSearch, FaChevronRight } from 'react-icons/fa';
+import { ThemeContext } from '../context/ThemeContext';
+import KPICard from '../components/KPICard';
+import TestHistoryTable from '../components/TestHistoryTable';
+import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
+  BarChart, Bar, Cell, Legend
+} from 'recharts';
+import { FaClipboardList, FaTrophy, FaCheckCircle, FaStar, FaChevronRight } from 'react-icons/fa';
 
 const ExamDashboard = () => {
-  const [tests, setTests] = useState([]);
+  const [testRecords, setTestRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState(localStorage.getItem('examCategory') || null);
-  const [selectedExam, setSelectedExam] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showGoalModal, setShowGoalModal] = useState(!selectedCategory);
-  
-  const { apiBase } = useContext(ThemeContext); // Validate source
+  const { apiBase } = useContext(ThemeContext);
   const navigate = useNavigate();
-
-  // Mock list of exams for the sidebar (in real app, fetch from DB)
-  const EXAMS_BY_CATEGORY = {
-    'banking': ['All', 'SBI PO', 'IBPS PO', 'RBI Grade B', 'SBI Clerk'],
-    'ssc': ['All', 'SSC CGL', 'SSC CHSL', 'SSC MTS'],
-    'railways': ['All', 'RRB NTPC', 'RRB Group D'],
-    'state-exams': ['All', 'UP Police', 'Bihar SI']
-  };
+  const inFlight = useRef(new Set());
 
   useEffect(() => {
-    if (selectedCategory) {
-      fetchTests();
-    }
-  }, [selectedCategory, selectedExam]);
-
-  const fetchTests = async () => {
-    try {
-      setLoading(true);
-      const params = { category: selectedCategory }; // Map ID to display name if needed
-      
-      // Basic filtering support
-      if (selectedExam !== 'All') {
-        params.examTarget = selectedExam;
-      }
-
-      console.log(`Fetching from: ${apiBase}/api/test`); // Debug log
-      const response = await axios.get(`${apiBase}/api/test`, { params });
-      setTests(response.data);
-    } catch (error) {
-      console.error('Error fetching tests:', error);
-    } finally {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user?._id) {
+      fetchUserTests(user._id);
+    } else {
       setLoading(false);
     }
+  }, []);
+
+  const fetchUserTests = async (userId) => {
+    if (inFlight.current.has(userId)) return;
+    inFlight.current.add(userId);
+    try {
+      const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await axios.get(`${apiBase}/api/user/tests/${userId}`, { headers });
+      const records = response.data.records || response.data || [];
+      setTestRecords(Array.isArray(records) ? records : []);
+    } catch (err) {
+      console.error("Dashboard fetch failed:", err);
+    } finally {
+      setLoading(false);
+      inFlight.current.delete(userId);
+    }
   };
 
-  const handleGoalSelect = (category) => {
-    setSelectedCategory(category);
-    localStorage.setItem('examCategory', category);
-    setShowGoalModal(false);
-    setSelectedExam('All'); // Reset exam filter
-  };
+  // Metrics calculation
+  const totalTests = testRecords.length;
+  const avgScore = testRecords.length > 0 
+    ? Math.round(testRecords.reduce((acc, curr) => acc + (curr.bestScore || 0), 0) / totalTests) 
+    : 0;
+  const passedTests = testRecords.filter(t => t.testDetails && t.bestScore >= t.testDetails.passingScore).length;
+  const accuracy = totalTests > 0 ? "68%" : "0%"; // Mocking for now, as it needs per-question data
+  const bestScore = testRecords.length > 0 ? Math.max(...testRecords.map(t => t.bestScore || 0)) : 0;
 
-  const filteredTests = tests.filter(test => 
-    test.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Chart Data
+  const scoreTrendData = testRecords
+    .slice(-7)
+    .sort((a,b) => new Date(a.lastAttempted) - new Date(b.lastAttempted))
+    .map(r => ({
+      name: new Date(r.lastAttempted).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+      score: r.bestScore
+    }));
+
+  const subjectData = [
+    { name: 'Quantitative', score: 65, fill: '#3b82f6' },
+    { name: 'Logical Reasoning', score: 78, fill: '#10b981' },
+    { name: 'Verbal Ability', score: 55, fill: '#f59e0b' },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 font-inter">
-      {/* Goal Selector Modal */}
-      {showGoalModal && <GoalSelector onSelect={handleGoalSelect} />}
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <KPICard 
+          title="Total Tests" 
+          value={totalTests} 
+          icon={<FaClipboardList />} 
+          color="blue" 
+          chartData={[{value: 30}, {value: 45}, {value: 35}, {value: 50}, {value: 40}, {value: 60}]}
+        />
+        <KPICard 
+          title="Avg Score" 
+          value={avgScore} 
+          unit="%" 
+          icon={<FaTrophy />} 
+          color="green" 
+          chartData={[{value: 40}, {value: 55}, {value: 50}, {value: 70}, {value: 65}, {value: 72}]}
+        />
+        <KPICard 
+          title="Accuracy" 
+          value={accuracy} 
+          icon={<FaCheckCircle />} 
+          color="purple" 
+          chartData={[{value: 60}, {value: 65}, {value: 62}, {value: 68}, {value: 64}, {value: 68}]}
+        />
+        <KPICard 
+          title="Best Score" 
+          value={bestScore} 
+          unit="%" 
+          icon={<FaStar />} 
+          color="orange" 
+          chartData={[{value: 50}, {value: 70}, {value: 85}, {value: 80}, {value: 90}, {value: 90}]}
+        />
+      </div>
 
-      <div className="container mx-auto px-4 py-8">
-        
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 font-poppins mb-2">
-              {selectedCategory ? `${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Exams` : 'Dashboard'}
-            </h1>
-            <p className="text-gray-500">Prepare for your dream job with our curated mock tests.</p>
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Score Trend */}
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-bold text-slate-800">Score Trend</h3>
+            <div className="flex gap-2">
+              <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+              <span className="text-xs font-semibold text-slate-400 uppercase">Test score</span>
+            </div>
           </div>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={scoreTrendData.length > 0 ? scoreTrendData : [{name: 'Jan 5', score: 45}, {name: 'Jan 10', score: 72}, {name: 'Jan 15', score: 65}, {name: 'Jan 20', score: 90}]}>
+                <defs>
+                  <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 500}} 
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 500}} 
+                  dx={-10}
+                />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="score" 
+                  stroke="#3b82f6" 
+                  strokeWidth={3} 
+                  fillOpacity={1} 
+                  fill="url(#colorScore)" 
+                  dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Accuracy by Subject */}
+        <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+          <h3 className="text-lg font-bold text-slate-800 mb-6">Accuracy by Subject</h3>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={subjectData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#94a3b8', fontSize: 11, fontWeight: 600}} 
+                  dy={10}
+                />
+                <YAxis 
+                   axisLine={false} 
+                   tickLine={false} 
+                   tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 500}} 
+                   dx={-10}
+                />
+                <Tooltip 
+                  cursor={{fill: '#f1f5f9'}}
+                  contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                />
+                <Bar dataKey="score" radius={[6, 6, 0, 0]} barSize={40}>
+                  {subjectData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex justify-center gap-6 mt-4">
+            {subjectData.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: item.fill}}></span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Test History Table */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-xl font-bold text-slate-800">Test History</h3>
           <button 
-            onClick={() => setShowGoalModal(true)}
-            className="mt-4 md:mt-0 px-6 py-2 bg-indigo-50 text-indigo-600 font-semibold rounded-full hover:bg-indigo-100 transition-colors"
+            onClick={() => navigate('/my-tests')}
+            className="text-blue-600 font-bold text-sm hover:underline flex items-center gap-1"
           >
-            Change Goal
+            See all <FaChevronRight size={10} />
           </button>
         </div>
-
-        <div className="flex flex-col md:flex-row gap-8">
-          
-          {/* Sidebar / Exam Filters */}
-          <aside className="w-full md:w-64 flex-shrink-0">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sticky top-24">
-              <h3 className="font-bold text-gray-700 mb-4 flex items-center gap-2">
-                <FaFilter className="text-blue-500" /> Exams
-              </h3>
-              <div className="space-y-2">
-                {(EXAMS_BY_CATEGORY[selectedCategory] || []).map((exam) => (
-                  <button
-                    key={exam}
-                    onClick={() => setSelectedExam(exam)}
-                    className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                      selectedExam === exam
-                        ? 'bg-blue-600 text-white shadow-md transform scale-105'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {exam}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </aside>
-
-          {/* Main Content / Test Grid */}
-          <main className="flex-1">
-            
-            {/* Search Bar */}
-            <div className="mb-6 relative">
-              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search for a test..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all shadow-sm"
-              />
-            </div>
-
-            {loading ? (
-              <div className="flex justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              </div>
-            ) : filteredTests.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredTests.map((test) => (
-                  <div key={test._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden group">
-                    <div className="p-6">
-                      <div className="flex justify-between items-start mb-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                          test.difficulty === 'hard' ? 'bg-red-100 text-red-600' :
-                          test.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                          'bg-green-100 text-green-600'
-                        }`}>
-                          {test.stage || 'Practice'}
-                        </span>
-                        <span className="text-xs text-gray-400 font-medium">
-                          {test.type || 'Mock Test'}
-                        </span>
-                      </div>
-                      
-                      <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
-                        {test.name}
-                      </h3>
-                      <p className="text-gray-500 text-sm mb-6 line-clamp-2">
-                        {test.description || "Comprehensive mock test to boost your preparation."}
-                      </p>
-                      
-                      <div className="flex items-center justify-between border-t border-gray-100 pt-4">
-                        <div className="flex flex-col">
-                          <span className="text-xs text-gray-400">Total Questions</span>
-                          <span className="font-bold text-gray-700">{test.questionSets?.reduce((acc, set) => acc + set.numToPick, 0) || 'N/A'}</span>
-                        </div>
-                        <button 
-                          onClick={() => navigate(`/test/instruction/${test._id}`)}
-                          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold text-sm hover:bg-blue-700 transition-all transform hover:scale-105 active:scale-95 shadow-blue-200 shadow-lg"
-                        >
-                          Start Now <FaChevronRight size={12} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300">
-                <p className="text-gray-500 text-lg">No tests found for this category.</p>
-                <p className="text-gray-400 text-sm mt-1">Try changing the Exam filter or selected category.</p>
-              </div>
-            )}
-          </main>
-        </div>
+        <TestHistoryTable testRecords={testRecords.slice(0, 5)} showFilters={false} />
       </div>
     </div>
   );
