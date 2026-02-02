@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
-import { FaSignOutAlt, FaCheckCircle } from "react-icons/fa"; 
+import { FaCheckCircle } from "react-icons/fa"; 
 import UserAnalytics from "../components/UserAnalytics";
 
 const UserProfile = () => {
@@ -118,12 +118,6 @@ const UserProfile = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100"> 
@@ -136,26 +130,6 @@ const UserProfile = () => {
           </div>
         ) : user ? (
           <div className="flex flex-col items-center text-center">
-            {/* Profile Image - Static to prevent load errors */}
-            <img
-              src="/assets/adventurer-1739115902517.svg"
-              alt="Profile"
-              className="w-32 h-32 rounded-full border-4 border-gray-300 shadow-md"
-            />
-
-            {/* User Info */}
-            <h2 className="text-3xl font-bold mt-3">{user.name}</h2>
-            <p className="text-lg text-gray-600">@{user.username}</p>
-            <span className="text-sm bg-gray-200 px-3 py-1 rounded-full mt-2">{user.role}</span>
-
-            <div className="mt-4 w-full px-6 space-y-2 text-gray-700 text-left">
-              <p><strong>Email:</strong> {user.email}</p>
-              <p><strong>Phone:</strong> {user.phone}</p>
-              <p><strong>Subscription:</strong> {user.subscription_status === "Active" ? 
-                <span className="text-green-600 font-semibold">Active ✅</span> : 
-                <span className="text-red-600 font-semibold">Inactive ❌</span>
-              }</p>
-            </div>
 
             {/* Tabs for Test History & Analytics */}
             <div className="mt-8 w-full">
@@ -220,13 +194,7 @@ const UserProfile = () => {
               )}
             </div>
 
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="mt-6 flex items-center bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition shadow-md"
-            >
-              <FaSignOutAlt className="mr-2" /> Logout
-            </button>
+
           </div>
         ) : (
           <div className="text-center text-gray-700">No user found.</div>

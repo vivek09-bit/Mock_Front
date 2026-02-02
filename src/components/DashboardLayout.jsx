@@ -28,7 +28,7 @@ const DashboardLayout = () => {
   const menuItems = [
     { name: 'Dashboard', icon: <FaThLarge />, path: '/dashboard' },
     { name: 'Mock Tests', icon: <FaClipboardList />, path: '/tests' },
-    { name: 'Typing Practice', icon: <FaClipboardList />, path: '/typing' },
+    // { name: 'Typing Practice', icon: <FaClipboardList />, path: '/typing' },
     { name: 'Analytics', icon: <FaChartBar />, path: '/analytics' },
     { name: 'Profile', icon: <FaUser />, path: `/profile/${user.username}` },
   ];
