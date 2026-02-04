@@ -36,7 +36,7 @@ function Header() {
         <nav className="container mx-auto flex justify-between items-center p-4">
           {/* Logo */}
           <Link to="/" className="text-2xl font-bold">
-            TeamIgnite
+            Ignite Verse
           </Link>
 
           {/* Navigation Links */}
@@ -51,12 +51,12 @@ function Header() {
                 Typing
               </Link>
             </li>
-            
+
             <li>
               <Link to="/faqspage" className="hover:text-gray-200">
                 FAQ
               </Link>
-            </li> 
+            </li>
             <li>
               <Link to="/about" className="hover:text-gray-200">
                 About Us
@@ -120,9 +120,8 @@ function Header() {
 
       {/* Mobile Navigation Slider */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-teal-800 text-white shadow-lg transform transition-transform duration-300 z-50 ${
-          isSliderOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 h-full w-64 bg-teal-800 text-white shadow-lg transform transition-transform duration-300 z-50 ${isSliderOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Close Button */}
         <button

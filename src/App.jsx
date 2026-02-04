@@ -49,7 +49,9 @@ const App = () => {
           <Route path='/typing' element={<Tping />} />
           <Route path='/about' element={<AboutUs />} />
           <Route path='/contact' element={<ContactForm />} />
-          <Route path='/page/terms-portal' element={<TermsAndConditions/>} />
+          <Route path='/page/terms-portal' element={<TermsAndConditions />} />
+          <Route path="/test/instruction/:testId" element={<TestInstruction />} />
+          <Route path='/Test-Submit' element={<TestResult />} />
           <Route path="*" element={<NotFound />} />
         </Route>
 
@@ -57,15 +59,13 @@ const App = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<ExamDashboard />} />
           <Route path="/my-tests" element={<MyTests />} />
-          <Route path="/analytics" element={<UserProfile />} /> 
+          <Route path="/analytics" element={<UserProfile />} />
           <Route path="/profile/:username" element={<Profile />} />
           <Route path="/tests" element={<TestList />} />
         </Route>
 
         {/* Specialized Routes without standard layout */}
-        <Route path="/test/instruction/:testId" element={<TestInstruction />} />
         <Route path="/take-test/:testId" element={<TakeTest />} />
-        <Route path='/Test-Submit' element={<TestResult />} />
       </Routes>
     </Router>
   );
