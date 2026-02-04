@@ -17,7 +17,7 @@ const TestInstruction = () => {
     // Assuming GET /api/test returns a list, checking if there is a detail endpoint. 
     // Usually GET /api/test/:id exists. Let's try that, or fallback to fetching all and filtering.
     // Based on previous code, testRoutes has router.get("/:id", ...).
-    
+
     const fetchTestDetails = async () => {
       try {
         const token = localStorage.getItem("authToken") || localStorage.getItem("token");
@@ -41,9 +41,9 @@ const TestInstruction = () => {
     <div className="min-h-screen bg-gray-50 pt-20 pb-10 font-inter">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          
+
           {/* Header */}
-          <div className="bg-blue-600 p-8 text-white">
+          <div className="bg-teal-600 p-8 text-white">
             <h1 className="text-3xl font-bold mb-2 font-poppins">{test.name}</h1>
             <p className="opacity-90">{test.description}</p>
           </div>
@@ -51,33 +51,33 @@ const TestInstruction = () => {
           {/* Content */}
           <div className="p-8">
             <div className="flex gap-6 mb-8 text-sm">
-                <div className="flex items-center gap-2 text-gray-600 bg-gray-100 px-4 py-2 rounded-full">
-                    <FaClock className="text-blue-500" /> 
-                    <span>Duration: <strong>{test.duration || 60} Mins</strong></span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600 bg-gray-100 px-4 py-2 rounded-full">
-                    <FaCheckCircle className="text-green-500" /> 
-                    <span>Total Marks: <strong>{test.totalMarks || 100}</strong></span>
-                </div>
+              <div className="flex items-center gap-2 text-gray-600 bg-gray-100 px-4 py-2 rounded-full">
+                <FaClock className="text-teal-500" />
+                <span>Duration: <strong>{test.duration || 60} Mins</strong></span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600 bg-gray-100 px-4 py-2 rounded-full">
+                <FaCheckCircle className="text-green-500" />
+                <span>Total Marks: <strong>{test.totalMarks || 100}</strong></span>
+              </div>
             </div>
 
             <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Instructions</h2>
             <ul className="space-y-3 text-gray-600 mb-8">
               <li className="flex items-start gap-3">
-                <span className="mt-1 text-blue-500">•</span>
+                <span className="mt-1 text-teal-500">•</span>
                 <span>The clock will be set at the server. The countdown timer in the top right corner of screen will display the remaining time available for you to complete the examination.</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="mt-1 text-blue-500">•</span>
+                <span className="mt-1 text-teal-500">•</span>
                 <span>The question palette at the right of screen shows one of the following statuses of each of the questions numbered.</span>
               </li>
               <li className="flex items-start gap-3">
-                 <span className="mt-1 text-blue-500">•</span>
-                 <span>You can click on the &quot;&gt;&quot; arrow button to save your answer and move to the next question.</span>
+                <span className="mt-1 text-teal-500">•</span>
+                <span>You can click on the &quot;&gt;&quot; arrow button to save your answer and move to the next question.</span>
               </li>
               <li className="flex items-start gap-3">
-                 <span className="mt-1 text-blue-500">•</span>
-                 <span>Click on <strong>Submit Test</strong> only when you have completed the test. You cannot change answers after submission.</span>
+                <span className="mt-1 text-teal-500">•</span>
+                <span>Click on <strong>Submit Test</strong> only when you have completed the test. You cannot change answers after submission.</span>
               </li>
             </ul>
 
@@ -90,15 +90,15 @@ const TestInstruction = () => {
             </div>
 
             <div className="flex justify-end gap-4">
-              <button 
+              <button
                 onClick={() => navigate('/dashboard')}
                 className="px-6 py-3 rounded-lg font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={() => navigate(`/take-test/${testId}`)}
-                className="px-8 py-3 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
+                className="px-8 py-3 rounded-lg font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1"
               >
                 I am ready to begin
               </button>

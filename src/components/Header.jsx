@@ -42,7 +42,7 @@ function Header() {
           {/* Navigation Links */}
           <ul className="hidden md:flex space-x-6">
             <li>
-              <Link to="/dashboard" className="hover:text-gray-200">
+              <Link to="/tests" className="hover:text-gray-200">
                 Mock Tests
               </Link>
             </li>

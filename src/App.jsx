@@ -65,6 +65,7 @@ const App = () => {
         </Route>
 
         {/* Specialized Routes without standard layout */}
+        {/* Specialized Routes without standard layout */}
         <Route path="/take-test/:testId" element={<TakeTest />} />
       </Routes>
     </Router>

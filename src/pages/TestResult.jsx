@@ -6,7 +6,7 @@ import Confetti from "react-confetti";
 const TestResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { result } = location.state || {};
+  const { result, attempted } = location.state || {};
   const [showConfetti, setShowConfetti] = useState(false);
 
   // Theme Colors
@@ -40,9 +40,16 @@ const TestResult = () => {
   // Calculate stats
   const totalQuestions = result.totalQuestions || 0;
   const correct = result.correctAnswers || 0;
-  const wrong = (result.attempted || 0) - correct; // Assuming attempted is available, else calculate differently if needed
-  const skipped = totalQuestions - (result.attempted || (correct + wrong)); // Fallback logic
-  const accuracy = totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0;
+  // Use passed attempted count, or fallback to result.attempted, or infer from correct if missing (fallback)
+  const attemptedCount = attempted !== undefined ? attempted : (result.attempted || 0);
+
+  // Wrong is Attempted minus Correct. (Ensure non-negative)
+  const wrong = Math.max(0, attemptedCount - correct);
+
+  // Skipped is Total minus Attempted
+  const skipped = Math.max(0, totalQuestions - attemptedCount);
+
+  const accuracy = attemptedCount > 0 ? Math.round((correct / attemptedCount) * 100) : 0;
   const isPassed = result.passed;
 
   return (
