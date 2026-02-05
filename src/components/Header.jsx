@@ -74,18 +74,37 @@ function Header() {
       <header className="bg-teal-700 text-white shadow-md sticky top-0 z-50">
         <nav className="container mx-auto flex justify-between items-center p-4">
           <Link to="/" className="text-2xl font-bold">
-            TeamIgnite
+            Ignite Verse
           </Link>
 
           {/* Desktop Navigation */}
           <ul className="hidden md:flex space-x-6">
-            {NAV_LINKS.map((link) => (
-              <li key={link.path}>
-                <Link to={link.path} className="hover:text-gray-200 transition-colors">
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+            <li>
+              <Link to="/dashboard" className="hover:text-gray-200">
+                Mock Tests
+              </Link>
+            </li>
+            <li>
+              <Link to="/typing" className="hover:text-gray-200">
+                Typing
+              </Link>
+            </li>
+            
+            <li>
+              <Link to="/faqspage" className="hover:text-gray-200">
+                FAQ
+              </Link>
+            </li> 
+            <li>
+              <Link to="/about" className="hover:text-gray-200">
+                About Us
+              </Link>
+            </li>
+            <li>
+              <Link to="/contact" className="hover:text-gray-200">
+                Contact
+              </Link>
+            </li>
           </ul>
 
           {/* Desktop Auth */}
@@ -105,7 +124,7 @@ function Header() {
       </header>
 
       {/* Mobile Navigation Slider */}
-      <aside
+      <div
         className={`fixed top-0 left-0 h-full w-64 bg-teal-800 text-white shadow-lg transform transition-transform duration-300 z-50 ${
           isSliderOpen ? "translate-x-0" : "-translate-x-full"
         }`}

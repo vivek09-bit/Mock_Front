@@ -1,107 +1,198 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FaRedo, FaHome } from "react-icons/fa";
+import { FaRedo, FaHome, FaCheckCircle, FaTimesCircle, FaChartPie, FaListAlt } from "react-icons/fa";
 import Confetti from "react-confetti";
 
 const TestResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { result } = location.state || {};
+  const { result, attempted } = location.state || {};
   const [showConfetti, setShowConfetti] = useState(false);
+
+  // Theme Colors
+  const themeColor = "#00695C"; // Teal from TakeTest
+  const successColor = "#4CAF50";
+  const errorColor = "#EF5350";
+  const warningColor = "#FF9800";
 
   useEffect(() => {
     if (result?.passed) {
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000);
+      setTimeout(() => setShowConfetti(false), 8000);
     }
   }, [result]);
 
   if (!result) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#062925] to-[#003C3B] text-white text-center">
-        <h2 className="text-3xl font-bold">No Result Found!</h2>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-gray-800 font-sans">
+        <h2 className="text-3xl font-bold mb-4">No Result Found</h2>
+        <p className="text-gray-500 mb-8">It looks like you haven't completed a test yet.</p>
         <button
-          className="mt-4 px-5 py-2 bg-[#00A896] rounded-lg hover:bg-[#007D77] transition duration-300"
+          className="px-6 py-3 bg-teal-700 text-white rounded-lg shadow-md hover:bg-teal-800 transition duration-300 font-semibold"
           onClick={() => navigate("/")}
         >
-          Go Back
+          Go Back Home
         </button>
       </div>
     );
   }
 
+  // Calculate stats
+  const totalQuestions = result.totalQuestions || 0;
+  const correct = result.correctAnswers || 0;
+  // Use passed attempted count, or fallback to result.attempted, or infer from correct if missing (fallback)
+  const attemptedCount = attempted !== undefined ? attempted : (result.attempted || 0);
+
+  // Wrong is Attempted minus Correct. (Ensure non-negative)
+  const wrong = Math.max(0, attemptedCount - correct);
+
+  // Skipped is Total minus Attempted
+  const skipped = Math.max(0, totalQuestions - attemptedCount);
+
+  const accuracy = attemptedCount > 0 ? Math.round((correct / attemptedCount) * 100) : 0;
+  const isPassed = result.passed;
+
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#031C1A] to-[#045D5D] p-6">
-      {showConfetti && <Confetti numberOfPieces={200} />}
+    <div className="min-h-screen bg-gray-100 py-12 px-4 font-sans">
+      {showConfetti && <Confetti numberOfPieces={300} recycle={false} />}
 
-      <div className="bg-white bg-opacity-10 backdrop-blur-xl shadow-lg rounded-lg p-8 w-full max-w-2xl text-white border border-[#1DBAB6]">
-        {/* Test Name */}
-        <h2 className="text-3xl font-bold text-center text-[#1DBAB6]">{result.testName}</h2>
+      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        {/* Score Display */}
-        <div className="mt-6 flex flex-col items-center justify-center">
-          <p className="text-lg text-gray-300">Your Score</p>
-          <div
-            className={`text-6xl font-bold ${
-              result.passed ? "text-[#4CAF50]" : "text-[#FF3B3B]"
-            }`}
-          >
-            {result.score}%
+        {/* Left Column: Score Card */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden text-center sticky top-24">
+            <div className={`${isPassed ? 'bg-teal-700' : 'bg-red-600'} text-white p-8 relative overflow-hidden`}>
+              <div className="relative z-10">
+                <h2 className="text-xl font-medium opacity-90 uppercase tracking-widest">{result.testName}</h2>
+                <div className="mt-6 mb-2">
+                  <span className="text-7xl font-extrabold">{result.score}</span>
+                  <span className="text-2xl opacity-75"> / 100</span>
+                </div>
+                <div className="inline-block px-4 py-1 rounded-full bg-white bg-opacity-20 backdrop-blur-sm text-sm font-bold mt-2">
+                  {isPassed ? "PASS" : "FAIL"}
+                </div>
+              </div>
+              {/* Decorative Circle */}
+              <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-white opacity-10 rounded-full"></div>
+            </div>
+
+            <div className="p-8">
+              <p className="text-gray-600 mb-6 font-medium">
+                {isPassed
+                  ? "Excellent work! You have cleared this test successfully."
+                  : "Don't give up! Review your mistakes and try again."}
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <p className="text-gray-400 text-xs uppercase mb-1">Accuracy</p>
+                  <p className="font-bold text-gray-800 text-lg">{accuracy}%</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <p className="text-gray-400 text-xs uppercase mb-1">Duration</p>
+                  <p className="font-bold text-gray-800 text-lg">--:--</p> {/* Placeholder if time not passed */}
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3">
+                <button
+                  className="w-full py-3 bg-teal-700 text-white rounded-lg font-bold shadow hover:bg-teal-800 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                  onClick={() => navigate(`/take-test/${result.testId}`)}
+                >
+                  <FaRedo /> Retake Test
+                </button>
+                <button
+                  className="w-full py-3 bg-white text-gray-700 border border-gray-300 rounded-lg font-bold hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                  onClick={() => navigate("/")}
+                >
+                  <FaHome /> Back Home
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Status */}
-        <p
-          className={`text-center text-lg font-semibold mt-4 ${
-            result.passed ? "text-[#46D39A]" : "text-[#FF6B6B]"
-          }`}
-        >
-          {result.passed ? "✅ Passed! Great Job!" : "❌ Failed! Try Again!"}
-        </p>
+        {/* Right Column: Detailed Analytics */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
 
-        {/* Test Summary */}
-        <div className="mt-6 grid grid-cols-2 gap-4 text-gray-300 text-sm">
-          <div className="p-4 bg-[#073B3A] rounded-lg text-center shadow-md">
-            <p className="text-xl font-semibold text-[#1DBAB6]">
-              {result.totalQuestions}
-            </p>
-            <p>Total Questions</p>
-          </div>
-          <div className="p-4 bg-[#073B3A] rounded-lg text-center shadow-md">
-            <p className="text-xl font-semibold text-[#46D39A]">
-              {result.correctAnswers}
-            </p>
-            <p>Correct Answers</p>
-          </div>
-          <div className="p-4 bg-[#073B3A] rounded-lg text-center shadow-md">
-            <p className="text-xl font-semibold text-[#FF6B6B]">
-              {result.totalQuestions - result.correctAnswers}
-            </p>
-            <p>Incorrect Answers</p>
-          </div>
-          <div className="p-4 bg-[#073B3A] rounded-lg text-center shadow-md">
-            <p className="text-xl font-semibold text-[#F4D35E]">
-              {result.passingScore}%
-            </p>
-            <p>Passing Score</p>
-          </div>
-        </div>
+          {/* Section 1: Quick Stats Grid */}
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <FaChartPie className="text-teal-600" /> Performance Summary
+            </h3>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex justify-center space-x-6">
-          <button
-            className="flex items-center px-5 py-2 bg-[#00A896] text-white rounded-lg shadow-md hover:bg-[#007D77] transition duration-300"
-            onClick={() => navigate(`/take-test/${result.testId}`)}
-          >
-            <FaRedo className="mr-2" /> Retake Test
-          </button>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 text-center">
+                <div className="text-3xl font-bold text-blue-600 mb-1">{totalQuestions}</div>
+                <div className="text-xs text-blue-400 font-bold uppercase">Total Qs</div>
+              </div>
+              <div className="p-4 rounded-xl bg-green-50 border border-green-100 text-center">
+                <div className="text-3xl font-bold text-green-600 mb-1">{result.correctAnswers}</div>
+                <div className="text-xs text-green-400 font-bold uppercase">Correct</div>
+              </div>
+              <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-center">
+                <div className="text-3xl font-bold text-red-600 mb-1">{wrong}</div>
+                <div className="text-xs text-red-400 font-bold uppercase">Incorrect</div>
+              </div>
+              <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 text-center">
+                <div className="text-3xl font-bold text-gray-600 mb-1">{skipped}</div>
+                <div className="text-xs text-gray-400 font-bold uppercase">Skipped</div>
+              </div>
+            </div>
+          </div>
 
-          <button
-            className="flex items-center px-5 py-2 bg-[#043F3B] text-white rounded-lg shadow-md hover:bg-[#032A28] transition duration-300"
-            onClick={() => navigate("/")}
-          >
-            <FaHome className="mr-2" /> Home
-          </button>
+          {/* Section 2: Question Breakdown (Placeholder for future detail list) */}
+          <div className="bg-white rounded-2xl shadow-lg p-8 flex-1">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <FaListAlt className="text-teal-600" /> Question Analysis
+              </h3>
+              <span className="text-sm text-gray-400">Detailed breakdown coming soon</span>
+            </div>
+
+            <div className="space-y-4">
+              {/* Visual Bars for representation */}
+              <div>
+                <div className="flex justify-between text-sm mb-1 text-gray-600">
+                  <span>Correct Answers</span>
+                  <span className="font-bold">{Math.round((correct / totalQuestions) * 100)}%</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                  <div className="bg-green-500 h-3 rounded-full" style={{ width: `${(correct / totalQuestions) * 100}%` }}></div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-sm mb-1 text-gray-600">
+                  <span>Incorrect Answers</span>
+                  <span className="font-bold">{Math.round((wrong / totalQuestions) * 100)}%</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                  <div className="bg-red-500 h-3 rounded-full" style={{ width: `${(wrong / totalQuestions) * 100}%` }}></div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-sm mb-1 text-gray-600">
+                  <span>Skipped</span>
+                  <span className="font-bold">{Math.round((skipped / totalQuestions) * 100)}%</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                  <div className="bg-gray-400 h-3 rounded-full" style={{ width: `${(skipped / totalQuestions) * 100}%` }}></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 p-6 bg-teal-50 rounded-xl border border-teal-100">
+              <h4 className="font-bold text-teal-800 mb-2">Recommendation</h4>
+              <p className="text-teal-700 text-sm leading-relaxed">
+                {isPassed
+                  ? "Great job! You have demonstrated strong understanding of the core concepts. Try attempting advanced level tests to further sharpen your skills."
+                  : "We recommend focusing on the topics where you faced difficulties. Review the learning materials and attempt the practice quizzes again before retaking the test."}
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
