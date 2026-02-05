@@ -25,10 +25,10 @@ function Header() {
   const closeSlider = () => setIsSliderOpen(false);
 
   const AuthSection = ({ isMobile = false }) => {
-    const containerClasses = isMobile 
-      ? "flex flex-col space-y-4 pt-4 border-t border-teal-600 mt-4" 
+    const containerClasses = isMobile
+      ? "flex flex-col space-y-4 pt-4 border-t border-teal-600 mt-4"
       : "flex items-center space-x-4";
-    
+
     const linkClasses = isMobile
       ? "block bg-white text-teal-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-center"
       : "bg-white text-teal-700 px-4 py-2 rounded-lg hover:bg-gray-200";
@@ -37,7 +37,11 @@ function Header() {
       return (
         <div className={containerClasses}>
           {user?.username ? (
-            <Link to={`/profile/${user.username}`} className={linkClasses} onClick={closeSlider}>
+            <Link
+              to={`/profile/${user.username}`}
+              className={linkClasses}
+              onClick={closeSlider}
+            >
               Profile
             </Link>
           ) : (
@@ -89,12 +93,12 @@ function Header() {
                 Typing
               </Link>
             </li>
-            
+
             <li>
               <Link to="/faqspage" className="hover:text-gray-200">
                 FAQ
               </Link>
-            </li> 
+            </li>
             <li>
               <Link to="/about" className="hover:text-gray-200">
                 About Us
@@ -153,7 +157,7 @@ function Header() {
 
           <AuthSection isMobile />
         </nav>
-      </aside>
+      </div>
 
       {/* Overlay */}
       {isSliderOpen && (
