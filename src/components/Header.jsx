@@ -152,15 +152,6 @@ function Header() {
             </Link>
           </li>
           <li>
-            <Link
-              to="/study-material"
-              className="block hover:text-teal-200"
-              onClick={closeSlider}
-            >
-              Study Material
-            </Link>
-          </li>
-          <li>
             <Link to="/FAQsPage" className="hover:text-gray-200">
               FAQs
             </Link>
