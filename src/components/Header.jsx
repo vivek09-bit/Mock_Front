@@ -140,10 +140,83 @@ function Header() {
           ✕
         </button>
 
-        <nav className="flex flex-col h-full pt-16 px-6">
-          <ul className="flex flex-col space-y-4">
-            {NAV_LINKS.map((link) => (
-              <li key={link.path}>
+        {/* Slider Navigation Links */}
+        <ul className="flex flex-col space-y-4 pt-16 px-6">
+          <li>
+            <Link
+              to="/dashboard"
+              className="block hover:text-teal-200"
+              onClick={closeSlider}
+            >
+              Mock Tests
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/typing"
+              className="block hover:text-teal-200"
+              onClick={closeSlider}
+            >
+              Typing
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/study-material"
+              className="block hover:text-teal-200"
+              onClick={closeSlider}
+            >
+              Study Material
+            </Link>
+          </li>
+          <li>
+            <Link to="/FAQsPage" className="hover:text-gray-200">
+              FAQs
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/about"
+              className="block hover:text-teal-200"
+              onClick={closeSlider}
+            >
+              About Us
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/contact"
+              className="block hover:text-teal-200"
+              onClick={closeSlider}
+            >
+              Contact
+            </Link>
+          </li>
+
+          {/* Slider Auth Buttons */}
+          <div className="border-t border-teal-600 pt-4 mt-4">
+            {token ? (
+              <>
+                {user && user.username ? (
+                  <Link
+                    to={`/profile/${user.username}`}
+                    className="block bg-white text-teal-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-center mb-3"
+                    onClick={closeSlider}
+                  >
+                    Profile
+                  </Link>
+                ) : (
+                  <p className="text-center mb-3">Loading...</p>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="w-full bg-red-500 px-4 py-2 rounded-lg hover:bg-red-600"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
                 <Link
                   to={link.path}
                   className="block text-lg hover:text-teal-200 transition-colors"
@@ -151,8 +224,8 @@ function Header() {
                 >
                   {link.label}
                 </Link>
-              </li>
-            ))}
+            ))
+            </div>
           </ul>
 
           <AuthSection isMobile />
