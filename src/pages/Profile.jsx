@@ -402,7 +402,7 @@ const Profile = () => {
               <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-8">
                 <div className="relative group">
                   <img 
-                    src={userData?.profilePic || `/src/assets/profile_avatar/${userData?.username?.charAt(0)?.toUpperCase() || 'U'}.png`} 
+                    src={userData?.profilePic || `/profile_avatar/${userData?.username?.charAt(0)?.toUpperCase() || 'U'}.png`} 
                     alt="Profile" 
                     className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
                   />
