@@ -109,9 +109,9 @@ const Register = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-teal-50 to-teal-100 p-6">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-50 to-blue-100 p-6">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold text-center text-teal-700 mb-6">
+        <h2 className="text-2xl font-semibold text-center text-blue-700 mb-6">
           {step === 1 ? "Sign Up" : step === 2 ? "Verify Email" : "Complete Profile"}
         </h2>
 
@@ -129,7 +129,7 @@ const Register = () => {
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 required
               />
             </div>
@@ -137,12 +137,12 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 rounded-lg text-white font-semibold transition ${loading ? "bg-gray-400" : "bg-teal-600 hover:bg-teal-700"}`}
+              className={`w-full py-3 rounded-lg text-white font-semibold transition ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
             >
               {loading ? "Sending..." : "Send Verification Code"}
             </button>
             <div className="text-center mt-2">
-              <a href="/login" className="text-teal-500 text-sm">Already have an account? Login</a>
+              <a href="/login" className="text-blue-500 text-sm">Already have an account? Login</a>
             </div>
           </form>
         )}
@@ -162,7 +162,7 @@ const Register = () => {
                 value={formData.otp}
                 onChange={handleChange}
                 maxLength="6"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none text-center tracking-widest text-xl"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-center tracking-widest text-xl"
                 required
               />
             </div>
@@ -170,7 +170,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 rounded-lg text-white font-semibold transition ${loading ? "bg-gray-400" : "bg-teal-600 hover:bg-teal-700"}`}
+              className={`w-full py-3 rounded-lg text-white font-semibold transition ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
             >
               {loading ? "Verifying..." : "Verify Email"}
             </button>
@@ -194,7 +194,7 @@ const Register = () => {
               placeholder="Full Name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             />
             <input
@@ -203,7 +203,7 @@ const Register = () => {
               placeholder="Username"
               value={formData.username}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             />
             <input
@@ -212,7 +212,7 @@ const Register = () => {
               placeholder="Password (min 6 chars)"
               value={formData.password}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             />
             <input
@@ -221,7 +221,7 @@ const Register = () => {
               placeholder="Phone Number"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             />
 
@@ -235,14 +235,14 @@ const Register = () => {
                 required
               />
               <label className="text-sm text-gray-600">
-                I accept the <a href="/page/terms-portal" className="text-teal-500 font-medium">Terms & Conditions</a>
+                I accept the <a href="/page/terms-portal" className="text-blue-500 font-medium">Terms & Conditions</a>
               </label>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 rounded-lg text-white font-semibold transition ${loading ? "bg-gray-400" : "bg-teal-600 hover:bg-teal-700"}`}
+              className={`w-full py-3 rounded-lg text-white font-semibold transition ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"}`}
             >
               {loading ? "Creating Account..." : "Complete Sign Up"}
             </button>

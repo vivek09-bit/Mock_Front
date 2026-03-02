@@ -46,7 +46,6 @@ const App = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/faqspage" element={<FAQsPage />} />
-          <Route path='/typing' element={<Tping />} />
           <Route path='/about' element={<AboutUs />} />
           <Route path='/contact' element={<ContactForm />} />
           <Route path='/page/terms-portal' element={<TermsAndConditions />} />
@@ -59,6 +58,7 @@ const App = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<ExamDashboard />} />
           <Route path="/my-tests" element={<MyTests />} />
+          <Route path='/typing' element={<Tping />} />
           <Route path="/analytics" element={<UserProfile />} />
           <Route path="/profile/:username" element={<Profile />} />
           <Route path="/tests" element={<TestList />} />

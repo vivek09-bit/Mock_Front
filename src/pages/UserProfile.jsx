@@ -164,8 +164,8 @@ const UserProfile = () => {
                   onClick={() => setActiveTab("history")}
                   className={`px-4 py-2 font-semibold text-lg transition-colors ${
                     activeTab === "history"
-                      ? "text-teal-600 border-b-2 border-teal-600"
-                      : "text-gray-500 hover:text-teal-500"
+                      ? "text-blue-600 border-b-2 border-blue-600"
+                      : "text-gray-500 hover:text-blue-500"
                   }`}
                 >
                   📜 Test History
@@ -174,8 +174,8 @@ const UserProfile = () => {
                   onClick={() => setActiveTab("analytics")}
                   className={`px-4 py-2 font-semibold text-lg transition-colors ${
                     activeTab === "analytics"
-                      ? "text-teal-600 border-b-2 border-teal-600"
-                      : "text-gray-500 hover:text-teal-500"
+                      ? "text-blue-600 border-b-2 border-blue-600"
+                      : "text-gray-500 hover:text-blue-500"
                   }`}
                 >
                   📊 Analytics

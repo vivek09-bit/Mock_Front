@@ -21,7 +21,7 @@ const ContactForm = () => {
   };
 
   return (
-    <div style={styles.root}>
+    <div style={styles.root} className="bg-blue-50">
       <div style={styles.container}>
         {/* Left Panel */}
         <div style={styles.leftPanel}>
@@ -29,7 +29,7 @@ const ContactForm = () => {
           <p style={styles.subtext}>
             We usually reply within<br />one business day.
           </p>
-          <div style={styles.contactInfo}>
+          <div >
             <div style={styles.infoRow}>
               <span style={styles.iconEmail}></span>
               <div>
@@ -51,7 +51,7 @@ const ContactForm = () => {
         {/* Right/Form Panel */}
         <form style={styles.rightPanel} onSubmit={handleSubmit}>
           <input
-            style={styles.input}
+            className="mb-4 w-full px-4 py-3 rounded-lg border border-blue-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             name="name"
             placeholder="Full Name"
             value={form.name}
@@ -60,7 +60,7 @@ const ContactForm = () => {
             required
           />
           <input
-            style={styles.input}
+            className="mb-4 w-full px-4 py-3 rounded-lg border border-blue-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             name="email"
             placeholder="Email Address"
             type="email"
@@ -70,7 +70,7 @@ const ContactForm = () => {
             required
           />
           <input
-            style={styles.input}
+            className="mb-4 w-full px-4 py-3 rounded-lg border border-blue-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             name="subject"
             placeholder="Subject"
             value={form.subject}
@@ -79,14 +79,17 @@ const ContactForm = () => {
             required
           />
           <textarea
-            style={styles.textarea}
+            className="mb-4 w-full px-4 py-3 rounded-lg border border-blue-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
             name="message"
             placeholder="Your Message"
             value={form.message}
             onChange={handleChange}
             required
           />
-          <button style={styles.button} type="submit">
+          <button
+            className="h-12 w-full rounded-lg text-white font-bold bg-gradient-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 transition"
+            type="submit"
+          >
             Send Message
           </button>
         </form>
@@ -98,14 +101,13 @@ const ContactForm = () => {
 // Inline styles
 const styles = {
   root: {
-    
     minHeight: "100vh",
     minWidth: "100vw",
-    background: "linear-gradient(to right, #f0fdfa, #ccfbf1)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     fontFamily: "Inter, Segoe UI, Arial, sans-serif",
+    backgroundColor: "#eff6ff" // light blue-50
   },
   container: {
     display: "flex",
@@ -118,7 +120,7 @@ const styles = {
   },
   leftPanel: {
     flex: "0 0 330px",
-    background: "linear-gradient(120deg, #0082a0 0%, #249e97 100%)",
+    background: "linear-gradient(120deg, #1e3a8a 0%, #3b82f6 100%)",
     color: "#fff",
     padding: "60px 38px",
     display: "flex",
@@ -166,7 +168,7 @@ const styles = {
     width: 38,
     height: 38,
     borderRadius: 12,
-    background: "linear-gradient(135deg, #e662ff 0%, #70eaff 100%)",
+    background: "linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)",
     display: "inline-block",
     backgroundImage: `url('data:image/svg+xml;utf8,<svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M2 6V18H22V6H2ZM20 8V8.51001L12 13.01L4 8.51001V8H20ZM4 16V10.69L12 15.19L20 10.69V16H4Z" /></svg>')`,
     backgroundPosition: "center",
@@ -176,7 +178,7 @@ const styles = {
     width: 38,
     height: 38,
     borderRadius: 12,
-    background: "linear-gradient(135deg, #6a79fa 0%, #ff77b3 100%)",
+    background: "linear-gradient(135deg, #2563eb 0%, #a5b4fc 100%)",
     display: "inline-block",
     backgroundImage: `url('data:image/svg+xml;utf8,<svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M6.62 10.79C8.06 13.62 10.38 15.94 13.21 17.38L15.41 15.18C15.8 14.79 16.37 14.67 16.85 14.84C17.98 15.23 19.19 15.44 20.5 15.44C21.05 15.44 21.5 15.89 21.5 16.44V20.5C21.5 21.05 21.05 21.5 20.5 21.5C10.22 21.5 2.5 13.78 2.5 3.5C2.5 2.95 2.95 2.5 3.5 2.5H7.56C8.11 2.5 8.56 2.95 8.56 3.5C8.56 4.81 8.77 6.02 9.16 7.15C9.33 7.63 9.21 8.2 8.82 8.59L6.62 10.79Z" /></svg>')`,
     backgroundPosition: "center",

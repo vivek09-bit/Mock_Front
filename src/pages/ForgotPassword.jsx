@@ -22,9 +22,9 @@ const ForgetPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-teal-50 to-teal-100 p-6">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-purple-50 to-purple-100 p-6">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold text-center text-teal-700">Forgot Password</h2>
+        <h2 className="text-2xl font-semibold text-center text-purple-700">Forgot Password</h2>
 
         {/* Success/Error Messages */}
         {message && <p className="text-green-500 text-center mt-2">{message}</p>}
@@ -40,7 +40,7 @@ const ForgetPassword = () => {
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
               required
             />
           </div>
@@ -48,7 +48,7 @@ const ForgetPassword = () => {
           {/* Send Reset Email Button */}
           <button
             type="submit"
-            className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition duration-300 font-semibold"
+            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg hover:bg-purple-700 transition duration-300 font-semibold"
           >
             Send Reset Link
           </button>
@@ -56,7 +56,7 @@ const ForgetPassword = () => {
 
         {/* Back to Login */}
         <div className="text-center mt-4">
-          <a href="/login" className="text-teal-500 text-sm hover:underline">
+          <a href="/login" className="text-purple-500 text-sm hover:underline">
             Back to Login
           </a>
         </div>

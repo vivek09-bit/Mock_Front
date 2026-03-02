@@ -30,9 +30,9 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-teal-50 to-teal-100 p-6">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-50 to-blue-100 p-6">
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold text-center text-teal-700 mb-6">Reset Password</h2>
+        <h2 className="text-2xl font-semibold text-center text-blue-700 mb-6">Reset Password</h2>
         
         {message && <p className="text-green-500 text-center mb-4 font-medium">{message}</p>}
         {error && <p className="text-red-500 text-center mb-4 font-medium">{error}</p>}
@@ -46,7 +46,7 @@ const ResetPassword = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Min 6 chars"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             />
           </div>
@@ -58,13 +58,13 @@ const ResetPassword = () => {
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Re-enter password"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               required
             />
           </div>
 
           <button 
-            className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition duration-300 font-semibold" 
+            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-semibold" 
             type="submit"
           >
             Reset Password
@@ -72,7 +72,7 @@ const ResetPassword = () => {
         </form>
 
         <div className="text-center mt-4">
-          <a href="/login" className="text-teal-500 text-sm hover:underline">Back to Login</a>
+          <a href="/login" className="text-blue-500 text-sm hover:underline">Back to Login</a>
         </div>
       </div>
     </div>

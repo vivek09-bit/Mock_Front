@@ -87,9 +87,9 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-teal-50 to-teal-100 p-6">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-bold text-center text-teal-700">Login</h2>
+    <div className="flex items-center justify-center min-h-screen bg-blue-50 p-6">
+      <div className="w-full max-w-md bg-purple-50 p-8 rounded-lg shadow-lg">
+        <h2 className="text-3xl font-bold text-center text-blue-700">Login</h2>
 
         {error && <p className="text-red-500 text-center mt-2">{error}</p>}
 
@@ -100,7 +100,7 @@ const Login = () => {
             placeholder="Email or Username"
             value={formData.emailOrUsername}
             onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             required
           />
 
@@ -110,12 +110,12 @@ const Login = () => {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
             required
           />
 
           <div className="text-right">
-            <a href="/forgot-password" className="text-sm text-teal-500 hover:underline">
+            <a href="/forgot-password" className="text-sm text-blue-500 hover:underline">
               Forgot password?
             </a>
           </div>
@@ -123,7 +123,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-teal-600 text-white py-3 rounded-lg hover:bg-teal-700 transition duration-300 flex justify-center items-center"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 flex justify-center items-center"
           >
             {loading ? (
               <>
@@ -174,7 +174,7 @@ const Login = () => {
           </button> */}
 
           <div className="text-center mt-4">
-            <a href="/register" className="text-teal-800 text-sm hover:underline">
+            <a href="/register" className="text-blue-800 text-sm hover:underline">
               Don't have an account? Sign up
             </a>
           </div>

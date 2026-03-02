@@ -32,7 +32,7 @@ function Header() {
 
   return (
     <>
-      <header className="bg-teal-700 text-white shadow-md">
+      <header className="bg-blue-700 text-white shadow-md">
         <nav className="container mx-auto flex justify-between items-center p-4">
           {/* Logo */}
           <Link to="/" className="text-2xl font-bold">
@@ -76,7 +76,7 @@ function Header() {
                 {user && user.username ? (
                   <Link
                     to={`/profile/${user.username}`}
-                    className="bg-white text-teal-700 px-4 py-2 rounded-lg hover:bg-gray-200"
+                    className="bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100"
                   >
                     Profile
                   </Link>
@@ -85,7 +85,7 @@ function Header() {
                 )}
                 <button
                   onClick={handleLogout}
-                  className="bg-red-500 px-4 py-2 rounded-lg hover:bg-red-600"
+                  className="bg-blue-700 border border-white text-white px-4 py-2 rounded-lg hover:bg-white hover:text-black"
                 >
                   Logout
                 </button>
@@ -94,13 +94,13 @@ function Header() {
               <>
                 <Link
                   to="/login"
-                  className="bg-white text-teal-700 px-4 py-2 rounded-lg hover:bg-gray-200"
+                  className="bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100"
                 >
                   Log In
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-teal-500 px-4 py-2 rounded-lg hover:bg-teal-600"
+                  className="bg-blue-700 border border-white text-white px-4 py-2 rounded-lg hover:bg-white hover:text-black"
                 >
                   Sign Up
                 </Link>
@@ -135,7 +135,7 @@ function Header() {
         <ul className="flex flex-col space-y-4 pt-16 px-6">
           <li>
             <Link
-              to="/dashboard"
+              to="/tests"
               className="block hover:text-teal-200"
               onClick={closeSlider}
             >
@@ -151,11 +151,17 @@ function Header() {
               Typing
             </Link>
           </li>
+
           <li>
-            <Link to="/FAQsPage" className="hover:text-gray-200">
-              FAQs
+            <Link
+              to="/dashboard"
+              className="block hover:text-teal-200"
+              onClick={closeSlider}
+            >
+              dashboard
             </Link>
           </li>
+          
           <li>
             <Link
               to="/about"

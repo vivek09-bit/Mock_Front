@@ -10,7 +10,7 @@ const TestResult = () => {
   const [showConfetti, setShowConfetti] = useState(false);
 
   // Theme Colors
-  const themeColor = "#00695C"; // Teal from TakeTest
+  const themeColor = "#00695C"; // blue from TakeTest
   const successColor = "#4CAF50";
   const errorColor = "#EF5350";
   const warningColor = "#FF9800";
@@ -28,7 +28,7 @@ const TestResult = () => {
         <h2 className="text-3xl font-bold mb-4">No Result Found</h2>
         <p className="text-gray-500 mb-8">It looks like you haven't completed a test yet.</p>
         <button
-          className="px-6 py-3 bg-teal-700 text-white rounded-lg shadow-md hover:bg-teal-800 transition duration-300 font-semibold"
+          className="px-6 py-3 bg-blue-700 text-white rounded-lg shadow-md hover:bg-blue-800 transition duration-300 font-semibold"
           onClick={() => navigate("/")}
         >
           Go Back Home
@@ -61,7 +61,7 @@ const TestResult = () => {
         {/* Left Column: Score Card */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden text-center sticky top-24">
-            <div className={`${isPassed ? 'bg-teal-700' : 'bg-red-600'} text-white p-8 relative overflow-hidden`}>
+            <div className={`${isPassed ? 'bg-blue-700' : 'bg-red-600'} text-white p-8 relative overflow-hidden`}>
               <div className="relative z-10">
                 <h2 className="text-xl font-medium opacity-90 uppercase tracking-widest">{result.testName}</h2>
                 <div className="mt-6 mb-2">
@@ -96,7 +96,7 @@ const TestResult = () => {
 
               <div className="mt-8 flex flex-col gap-3">
                 <button
-                  className="w-full py-3 bg-teal-700 text-white rounded-lg font-bold shadow hover:bg-teal-800 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-blue-700 text-white rounded-lg font-bold shadow hover:bg-blue-800 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                   onClick={() => navigate(`/take-test/${result.testId}`)}
                 >
                   <FaRedo /> Retake Test
@@ -118,7 +118,7 @@ const TestResult = () => {
           {/* Section 1: Quick Stats Grid */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-              <FaChartPie className="text-teal-600" /> Performance Summary
+              <FaChartPie className="text-blue-600" /> Performance Summary
             </h3>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -145,7 +145,7 @@ const TestResult = () => {
           <div className="bg-white rounded-2xl shadow-lg p-8 flex-1">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <FaListAlt className="text-teal-600" /> Question Analysis
+                <FaListAlt className="text-blue-600" /> Question Analysis
               </h3>
               <span className="text-sm text-gray-400">Detailed breakdown coming soon</span>
             </div>
@@ -183,9 +183,9 @@ const TestResult = () => {
               </div>
             </div>
 
-            <div className="mt-8 p-6 bg-teal-50 rounded-xl border border-teal-100">
-              <h4 className="font-bold text-teal-800 mb-2">Recommendation</h4>
-              <p className="text-teal-700 text-sm leading-relaxed">
+            <div className="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-100">
+              <h4 className="font-bold text-blue-800 mb-2">Recommendation</h4>
+              <p className="text-blue-700 text-sm leading-relaxed">
                 {isPassed
                   ? "Great job! You have demonstrated strong understanding of the core concepts. Try attempting advanced level tests to further sharpen your skills."
                   : "We recommend focusing on the topics where you faced difficulties. Review the learning materials and attempt the practice quizzes again before retaking the test."}

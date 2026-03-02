@@ -134,7 +134,7 @@ const CustomDropdown = ({ options, value, onChange, disabled, label }) => {
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-white text-gray-700 px-6 py-3 rounded-full shadow-md flex items-center justify-between border border-transparent focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'}`}
+        className={`w-full bg-white text-gray-700 px-6 py-3 rounded-full shadow-md flex items-center justify-between border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'}`}
       >
         <span className="text-lg font-medium">{selectedOption.label}</span>
         {isOpen ? <ChevronUp size={24} className="text-gray-400" /> : <ChevronDown size={24} className="text-gray-400" />}
@@ -166,7 +166,7 @@ const CustomDropdown = ({ options, value, onChange, disabled, label }) => {
                   onChange(opt.value);
                   setIsOpen(false);
                 }}
-                className={`w-full text-left px-6 py-2.5 text-lg hover:bg-gray-50 transition-colors ${value === opt.value ? 'text-teal-600 font-semibold bg-teal-50/30' : 'text-gray-600'}`}
+                className={`w-full text-left px-6 py-2.5 text-lg hover:bg-gray-50 transition-colors ${value === opt.value ? 'text-blue-600 font-semibold bg-blue-50/30' : 'text-gray-600'}`}
               >
                 {opt.label}
               </button>
@@ -430,7 +430,7 @@ export default function TypingTest() {
       let className = "";
       if (i < iArr.length) {
         if (iArr[i] === char) {
-          className = "text-green-500 opacity-100";
+          className = "text-purple-500 opacity-100";
         } else {
           className = "text-red-500 opacity-100 underline decoration-2 underline-offset-4";
         }
@@ -448,7 +448,7 @@ export default function TypingTest() {
 
   return (
     <div 
-      className={`w-full min-h-screen font-sans transition-colors duration-500 flex flex-col items-center justify-center p-4 relative overflow-x-hidden overflow-y-auto ${darkMode ? 'bg-[#006967] text-white' : 'bg-[#d9fffb] text-[#444]'}`}
+      className={`w-full min-h-screen font-sans transition-colors duration-500 flex flex-col items-center justify-center p-4 relative overflow-x-hidden overflow-y-auto ${darkMode ? 'bg-purple-900 text-white' : 'bg-purple-100 text-[#444]'}`}
       style={{ scrollbarWidth: 'thin', scrollbarColor: darkMode ? '#ffffff33 transparent' : '#00000022 transparent' }}
     >
       
@@ -478,13 +478,13 @@ export default function TypingTest() {
             <>
               <div className="hidden lg:block absolute -left-48 bottom-0 w-64 h-auto animate-in fade-in slide-in-from-left-8 duration-1000 delay-200">
                 <img src={femaleTyping} alt="Female typing" className="w-full opacity-90 hover:opacity-100 transition-all cursor-pointer" />
-                <button className={`mt-4 px-6 py-2 border-2 rounded-full text-sm font-bold uppercase tracking-widest transition-colors block mx-auto ${darkMode ? 'border-white/40 hover:bg-white/10' : 'border-slate-800/40 text-slate-800 hover:bg-slate-800/10'}`}>
+                <button className={`mt-4 px-6 py-2 border-2 rounded-full text-sm font-bold uppercase tracking-widest transition-colors block mx-auto ${darkMode ? 'border-white/40 hover:bg-white/10' : 'border-purple-800/40 text-purple-800 hover:bg-purple-800/10'}`}>
                   Typing Games
                 </button>
               </div>
               <div className="hidden lg:block absolute -right-48 bottom-0 w-64 h-auto animate-in fade-in slide-in-from-right-8 duration-1000 delay-200">
                 <img src={maleTyping} alt="Male typing" className="w-full opacity-90 hover:opacity-100 transition-all cursor-pointer" />
-                <button className={`mt-4 px-6 py-2 border-2 rounded-full text-sm font-bold uppercase tracking-widest transition-colors block mx-auto ${darkMode ? 'border-white/40 hover:bg-white/10' : 'border-slate-800/40 text-slate-800 hover:bg-slate-800/10'}`}>
+                <button className={`mt-4 px-6 py-2 border-2 rounded-full text-sm font-bold uppercase tracking-widest transition-colors block mx-auto ${darkMode ? 'border-white/40 hover:bg-white/10' : 'border-purple-800/40 text-purple-800 hover:bg-purple-800/10'}`}>
                   Typing Lessons
                 </button>
               </div>
@@ -521,7 +521,7 @@ export default function TypingTest() {
 
               <button
                 onClick={startTest}
-                className="group relative overflow-hidden px-12 py-4 bg-[#085f63] hover:bg-[#0a7a7e] text-white rounded-full font-bold text-xl shadow-[0_10px_30px_rgba(8,95,99,0.3)] hover:shadow-[0_15px_40px_rgba(8,95,99,0.5)] transform hover:-translate-y-1 transition-all"
+                className={`group relative overflow-hidden px-12 py-4 rounded-full font-bold text-xl transform hover:-tranpurple-y-1 transition-all shadow-[0_10px_30px_rgba(8,95,99,0.3)] hover:shadow-[0_15px_40px_rgba(8,95,99,0.5)] ${darkMode ? 'bg-purple-50 text-purple-900 hover:bg-purple-100' : 'bg-purple-900 hover:bg-purple-800 text-white'}`}
               >
                 <span className="relative z-10 uppercase tracking-widest">Start Test</span>
               </button>
@@ -531,16 +531,16 @@ export default function TypingTest() {
                   className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors duration-300 ${darkMode ? 'bg-blue-500' : 'bg-gray-400'}`}
                   onClick={() => setDarkMode(!darkMode)}
                 >
-                  <div className={`w-4 h-4 bg-white rounded-full transform transition-transform duration-300 ${darkMode ? 'translate-x-6' : 'translate-x-0'}`} />
+                  <div className={`w-4 h-4 bg-white rounded-full transform transition-transform duration-300 ${darkMode ? 'tranpurple-x-6' : 'tranpurple-x-0'}`} />
                 </div>
                 <span className="text-lg opacity-80">Dark Mode</span>
               </div>
             </div>
           ) : finished ? (
             /* Results Panel */
-            <div className="w-full max-w-4xl bg-slate-900 text-white p-8 md:p-12 rounded-3xl shadow-2xl flex flex-col items-center gap-8 animate-in zoom-in duration-500 border border-white/10">
+            <div className="w-full max-w-4xl bg-purple-900 text-white p-8 md:p-12 rounded-3xl shadow-2xl flex flex-col items-center gap-8 animate-in zoom-in duration-500 border border-white/10">
               <div className="flex flex-col items-center mb-4">
-                <h2 className="text-5xl font-black text-teal-400 tracking-tighter uppercase italic">Test Result</h2>
+                <h2 className="text-5xl font-black text-blue-400 tracking-tighter uppercase italic">Test Result</h2>
                 {isSuspicious && (
                   <div className="mt-2 px-4 py-1 bg-red-500/20 border border-red-500/50 rounded-full flex items-center gap-2">
                     <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
@@ -549,20 +549,20 @@ export default function TypingTest() {
                 )}
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
-                <div className="flex flex-col items-center p-6 bg-white/5 rounded-2xl border border-white/5 group hover:border-teal-500/30 transition-all">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full  p-6 rounded-2xl border border-white/10">
+                <div className="flex flex-col items-center p-6 bg-white/5 rounded-2xl border border-white/5 group hover:border-blue-500/30 transition-all">
                     <span className="text-[10px] uppercase font-bold tracking-widest opacity-40 mb-1">Net Speed</span>
-                    <span className="text-5xl font-black text-teal-400">{netSpeed} <span className="text-sm font-light text-white opacity-40">WPM</span></span>
+                    <span className="text-5xl font-black text-blue-400">{netSpeed} <span className="text-sm font-light text-white opacity-40">WPM</span></span>
                 </div>
-                <div className="flex flex-col items-center p-6 bg-white/5 rounded-2xl border border-white/5 group hover:border-teal-500/30 transition-all">
+                <div className="flex flex-col items-center p-6 bg-white/5 rounded-2xl border border-white/5 group hover:border-blue-500/30 transition-all">
                     <span className="text-[10px] uppercase font-bold tracking-widest opacity-40 mb-1">Accuracy</span>
-                    <span className="text-5xl font-black text-teal-400">{accuracy}<span className="text-sm font-light text-white opacity-40">%</span></span>
+                    <span className="text-5xl font-black text-blue-400">{accuracy}<span className="text-sm font-light text-white opacity-40">%</span></span>
                 </div>
-                <div className="flex flex-col items-center p-6 bg-white/5 rounded-2xl border border-white/5 group hover:border-teal-500/30 transition-all">
+                <div className="flex flex-col items-center p-6 bg-white/5 rounded-2xl border border-white/5 group hover:border-blue-500/30 transition-all">
                     <span className="text-[10px] uppercase font-bold tracking-widest opacity-40 mb-1">Consistency</span>
-                    <span className="text-5xl font-black text-teal-400">{consistency}<span className="text-sm font-light text-white opacity-40">%</span></span>
+                    <span className="text-5xl font-black text-blue-400">{consistency}<span className="text-sm font-light text-white opacity-40">%</span></span>
                 </div>
-                <div className="flex flex-col items-center p-6 bg-white/5 rounded-2xl border border-white/5 group hover:border-teal-500/30 transition-all">
+                <div className="flex flex-col items-center p-6 bg-white/5 rounded-2xl border border-white/5 group hover:border-blue-500/30 transition-all">
                     <span className="text-[10px] uppercase font-bold tracking-widest opacity-40 mb-1">Gross WPM</span>
                     <span className="text-5xl font-black text-white/80">{wpm}</span>
                 </div>
@@ -601,7 +601,7 @@ export default function TypingTest() {
                         .slice(0, 5)
                         .map(([char, count], i) => (
                           <div key={i} className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
-                            <span className="text-sm font-mono text-teal-400">{char === " " ? "SPC" : char}</span>
+                            <span className="text-sm font-mono text-blue-400">{char === " " ? "SPC" : char}</span>
                             <span className="text-[10px] opacity-40">×</span>
                             <span className="text-sm font-bold">{count}</span>
                           </div>
@@ -614,7 +614,7 @@ export default function TypingTest() {
                     <span className="text-xs opacity-60">Level</span>
                     <span className={`text-xs font-bold px-3 py-1 rounded-full ${
                       netSpeed > 100 ? 'bg-purple-500/20 text-purple-400' :
-                      netSpeed > 80 ? 'bg-teal-500/20 text-teal-400' :
+                      netSpeed > 80 ? 'bg-blue-500/20 text-blue-400' :
                       netSpeed > 50 ? 'bg-blue-500/20 text-blue-400' :
                       'bg-gray-500/20 text-gray-400'
                     }`}>
@@ -630,10 +630,10 @@ export default function TypingTest() {
 
               <button
                 onClick={resetTest}
-                className="group relative px-16 py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-full font-black text-xl transition-all shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_30px_rgba(20,184,166,0.5)] overflow-hidden"
+                className="group relative px-16 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-black text-xl transition-all shadow-[0_0_20px_rgba(20,184,166,0.3)] hover:shadow-[0_0_30px_rgba(20,184,166,0.5)] overflow-hidden"
               >
                 <span className="relative z-10 uppercase tracking-widest">Restart Test</span>
-                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                <div className="absolute inset-0 bg-white/10 tranpurple-y-full group-hover:tranpurple-y-0 transition-transform duration-300" />
               </button>
             </div>
           ) : (
@@ -644,11 +644,11 @@ export default function TypingTest() {
                 <div className="flex gap-8">
                     <div className="flex flex-col">
                         <span className="text-xs uppercase opacity-60">Timer</span>
-                        <span className="text-3xl font-mono font-bold text-teal-400">{formatTime(timeLeft)}</span>
+                        <span className="text-3xl font-mono font-bold text-blue-400">{formatTime(timeLeft)}</span>
                     </div>
                     <div className="flex flex-col">
                         <span className="text-xs uppercase opacity-60">WPM</span>
-                        <span className="text-3xl font-mono font-bold text-teal-400">{wpm}</span>
+                        <span className="text-3xl font-mono font-bold text-blue-400">{wpm}</span>
                     </div>
                 </div>
                 <button 
@@ -663,7 +663,7 @@ export default function TypingTest() {
               <div className="relative p-10 bg-white shadow-2xl rounded-3xl overflow-hidden min-h-[250px] flex items-center justify-center">
                  {/* Progress Indicator */}
                 <div 
-                  className="absolute top-0 left-0 h-1.5 bg-teal-500 transition-all duration-300" 
+                  className="absolute top-0 left-0 h-1.5 bg-blue-500 transition-all duration-300" 
                   style={{ width: `${((duration * 60 - timeLeft) / (duration * 60)) * 100}%` }}
                 />
 

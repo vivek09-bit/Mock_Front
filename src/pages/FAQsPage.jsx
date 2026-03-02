@@ -31,13 +31,13 @@ const FAQItem = ({ faq, open, onClick }) => (
       className="w-full text-left flex justify-between items-center py-4 focus:outline-none"
       onClick={onClick}
     >
-      <span className="font-semibold text-lg text-teal-900">
+      <span className="font-semibold text-lg text-blue-900">
         {faq.question}
       </span>
       <span className="ml-4">
         {open ? (
           <svg
-            className="w-5 h-5 text-teal-600"
+            className="w-5 h-5 text-blue-600"
             fill="none"
             viewBox="0 0 24 24"
           >
@@ -45,7 +45,7 @@ const FAQItem = ({ faq, open, onClick }) => (
           </svg>
         ) : (
           <svg
-            className="w-5 h-5 text-teal-600"
+            className="w-5 h-5 text-blue-600"
             fill="none"
             viewBox="0 0 24 24"
           >
@@ -66,9 +66,9 @@ const FAQ = () => {
   const [openIndex, setOpenIndex] = useState(null);
 
   return (
-    <section className="bg-gradient-to-r from-teal-50 to-teal-100 py-14 px-4 md:px-0">
+    <section className="bg-gradient-to-r from-blue-50 to-blue-100 py-14 px-4 md:px-0">
       <div className="max-w-2xl mx-auto my-12 rounded-xl shadow-lg p-8 bg-white">
-        <h2 className="text-3xl font-bold text-teal-800 mb-8 text-center">
+        <h2 className="text-3xl font-bold text-blue-800 mb-8 text-center">
           Frequently Asked Questions
         </h2>
         <div>

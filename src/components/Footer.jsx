@@ -3,7 +3,7 @@ import { FaTwitter, FaLinkedin, FaGithub, FaInstagram, FaHeart } from "react-ico
 
 const Footer = () => {
   return (
-    <footer className="bg-teal-700 text-white py-6 border-t border-teal-400 mt-auto">
+    <footer className="bg-blue-700 text-white py-6 border-t border-blue-400 mt-auto">
       <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
         {/* 🌍 Left Section - Copyright */}
         <p className="text-sm md:text-base">&copy; 2024 NextGen Learning. All Rights Reserved.</p>
@@ -21,7 +21,7 @@ const Footer = () => {
           Built by{" "}
           <a
             href="https://teamignite.in"
-            className="text-teal-200 hover:text-white transition duration-300"
+            className="text-blue-200 hover:text-white transition duration-300"
           >
             Team Ignite
           </a>{" "}
@@ -36,7 +36,7 @@ const Footer = () => {
 const SocialLink = ({ href, icon }) => (
   <a
     href={href}
-    className="text-white text-xl hover:text-teal-300 transition duration-300"
+    className="text-white text-xl hover:text-blue-300 transition duration-300"
     target="_blank"
     rel="noopener noreferrer"
   >
