@@ -120,7 +120,7 @@ function Header() {
 
       {/* Mobile Navigation Slider */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-teal-800 text-white shadow-lg transform transition-transform duration-300 z-50 ${isSliderOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-700 to-purple-700 text-white shadow-lg transform transition-transform duration-300 z-50 ${isSliderOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         {/* Close Button */}
@@ -136,7 +136,7 @@ function Header() {
           <li>
             <Link
               to="/tests"
-              className="block hover:text-teal-200"
+              className="block hover:text-blue-200"
               onClick={closeSlider}
             >
               Mock Tests
@@ -145,7 +145,7 @@ function Header() {
           <li>
             <Link
               to="/typing"
-              className="block hover:text-teal-200"
+              className="block hover:text-blue-200"
               onClick={closeSlider}
             >
               Typing
@@ -155,7 +155,7 @@ function Header() {
           <li>
             <Link
               to="/dashboard"
-              className="block hover:text-teal-200"
+              className="block hover:text-blue-200"
               onClick={closeSlider}
             >
               dashboard
@@ -165,7 +165,7 @@ function Header() {
           <li>
             <Link
               to="/about"
-              className="block hover:text-teal-200"
+              className="block hover:text-blue-200"
               onClick={closeSlider}
             >
               About Us
@@ -174,7 +174,7 @@ function Header() {
           <li>
             <Link
               to="/contact"
-              className="block hover:text-teal-200"
+              className="block hover:text-blue-200"
               onClick={closeSlider}
             >
               Contact
@@ -182,13 +182,13 @@ function Header() {
           </li>
 
           {/* Slider Auth Buttons */}
-          <div className="border-t border-teal-600 pt-4 mt-4">
+          <div className="border-t border-blue-600 pt-4 mt-4">
             {token ? (
               <>
                 {user && user.username ? (
                   <Link
                     to={`/profile/${user.username}`}
-                    className="block bg-white text-teal-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-center mb-3"
+                    className="block bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-center mb-3"
                     onClick={closeSlider}
                   >
                     Profile
@@ -207,14 +207,14 @@ function Header() {
               <>
                 <Link
                   to="/login"
-                  className="block bg-white text-teal-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-center mb-3"
+                  className="block bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-center mb-3"
                   onClick={closeSlider}
                 >
                   Log In
                 </Link>
                 <Link
                   to="/register"
-                  className="block bg-teal-500 px-4 py-2 rounded-lg hover:bg-teal-600 text-center"
+                  className="block bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-600 text-center"
                   onClick={closeSlider}
                 >
                   Sign Up

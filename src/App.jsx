@@ -60,11 +60,10 @@ const App = () => {
           <Route path="/my-tests" element={<MyTests />} />
           <Route path='/typing' element={<Tping />} />
           <Route path="/analytics" element={<UserProfile />} />
-          <Route path="/profile/:username" element={<Profile />} />
           <Route path="/tests" element={<TestList />} />
+          <Route path="/profile/:username" element={<Profile />} />
         </Route>
 
-        {/* Specialized Routes without standard layout */}
         {/* Specialized Routes without standard layout */}
         <Route path="/take-test/:testId" element={<TakeTest />} />
       </Routes>

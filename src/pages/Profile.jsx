@@ -57,6 +57,7 @@ const Profile = () => {
        }
        
        if (user._id) {
+           console.log("Fetching tests for user:", user.username);
            fetchUserTests(user._id);
        }
        fetchProfileData();
