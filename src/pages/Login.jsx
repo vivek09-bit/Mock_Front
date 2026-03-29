@@ -68,8 +68,10 @@ const Login = () => {
 
       localStorage.setItem("user", JSON.stringify(user));
 
-      // Navigate only if username exists; otherwise navigate to profile root
-      if (user.username) {
+      // Role-based redirection
+      if (user.role === "ins" || user.role === "ad") {
+        navigate("/dashboard");
+      } else if (user.username) {
         navigate(`/profile/${user.username}`);
       } else {
         navigate(`/profile`);
@@ -173,9 +175,12 @@ const Login = () => {
             Login with Google
           </button> */}
 
-          <div className="text-center mt-4">
+          <div className="text-center mt-4 flex flex-col gap-2">
             <a href="/register" className="text-blue-800 text-sm hover:underline">
               Don't have an account? Sign up
+            </a>
+            <a href="/instructor-login" className="text-indigo-700 text-sm font-bold hover:underline">
+              Login as Instructor
             </a>
           </div>
         </form>

@@ -132,3 +132,64 @@
     transform: rotate(-19deg);
   }
 }
+
+/* Math Table Styles (IndiaBix style common in aptitude tests) */
+.ga-tbl-answer {
+    margin: 5px 0;
+    padding: 0;
+    border: none;
+    border-collapse: collapse;
+    display: inline-table;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.ga-tr-divident {
+    border: none;
+}
+
+.ga-td-divident {
+    border-bottom: 1px solid #333;
+    text-align: center;
+    padding: 0 5px;
+    line-height: 1.2;
+}
+
+.ga-td-divisor {
+    border: none;
+    text-align: center;
+    padding: 0 5px;
+    line-height: 1.2;
+}
+
+.ga-td-line {
+    border: none;
+    vertical-align: middle;
+    padding: 0 5px;
+    white-space: nowrap;
+}
+
+.ga-td-line-lrpad {
+    padding-left: 12px;
+    padding-right: 12px;
+    vertical-align: middle;
+}
+
+.ga-td-line-lpad {
+    padding-left: 12px;
+    vertical-align: middle;
+}
+
+.ga-td-line-rpad {
+    padding-right: 12px;
+    vertical-align: middle;
+}
+
+.question-content table, .option-content table {
+    display: inline-table !important;
+    vertical-align: middle;
+}
+
+.option-content p {
+    display: inline;
+}

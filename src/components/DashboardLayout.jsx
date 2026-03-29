@@ -25,13 +25,21 @@ const DashboardLayout = () => {
     navigate('/login');
   };
 
-  const menuItems = [
+  const studentItems = [
     { name: 'Mock Tests', icon: <FaClipboardList />, path: '/tests' },
     { name: 'Typing Practice', icon: <FaClipboardList />, path: '/typing' },
-    // { name: 'Analytics', icon: <FaChartBar />, path: '/analytics' },
     { name: 'Dashboard', icon: <FaThLarge />, path: '/dashboard' },
     { name: 'Profile', icon: <FaUser />, path: `/profile/${user.username}` },
   ];
+
+  const instructorItems = [
+    { name: 'Educator Portal', icon: <FaThLarge />, path: '/dashboard' },
+    { name: 'My Classes / Tests', icon: <FaClipboardList />, path: '/instructor/my-tests' },
+    { name: 'Create New Test', icon: <FaClipboardList />, path: '/instructor/create-test' },
+    { name: 'Profile', icon: <FaUser />, path: `/profile/${user.username}` },
+  ];
+
+  const menuItems = user.role === 'ins' ? instructorItems : studentItems;
 
   return (
     <div className="flex flex-col h-screen font-inter">

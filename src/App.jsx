@@ -18,10 +18,22 @@ import Tping from './pages/Tping';
 import AboutUs from './components/About';
 import ContactForm from './pages/ContactForm';
 import FAQsPage from './pages/FAQsPage';
-import ExamDashboard from './pages/ExamDashboard';
-import TestInstruction from './pages/TestInstruction';
-import DashboardLayout from './components/DashboardLayout';
-import MyTests from './pages/MyTests';
+import InstructorLogin from "./pages/InstructorLogin";
+import InstructorRegister from "./pages/InstructorRegister";
+import InstructorDashboard from "./pages/InstructorDashboard";
+import InstructorTestList from "./pages/InstructorTestList";
+import CreateTest from "./pages/CreateTest";
+import TestAnalytics from "./pages/TestAnalytics";
+import ExamDashboard from "./pages/ExamDashboard";
+import TestInstruction from "./pages/TestInstruction";
+import DashboardLayout from "./components/DashboardLayout";
+import MyTests from "./pages/MyTests";
+
+const DashboardRoute = () => {
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const role = storedUser?.role;
+    return role === 'ins' ? <InstructorDashboard /> : <ExamDashboard />;
+};
 
 const PublicLayout = () => (
   <div className="flex flex-col min-vh-100">
@@ -41,6 +53,8 @@ const App = () => {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/instructor-login" element={<InstructorLogin />} />
+          <Route path="/instructor-register" element={<InstructorRegister />} />
           <Route path="/register" element={<Register />} />
           <Route path="/signup" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -56,12 +70,17 @@ const App = () => {
 
         {/* Dashboard Routes with Sidebar */}
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<ExamDashboard />} />
-          <Route path="/my-tests" element={<MyTests />} />
+          <Route path="/dashboard" element={<DashboardRoute />} />
           <Route path='/typing' element={<Tping />} />
           <Route path="/analytics" element={<UserProfile />} />
-          <Route path="/tests" element={<TestList />} />
           <Route path="/profile/:username" element={<Profile />} />
+          <Route path="/my-tests" element={<MyTests />} />
+          <Route path="/tests" element={<TestList />} />
+          
+          {/* Instructor Specific Paths */}
+          <Route path="/instructor/my-tests" element={<InstructorTestList />} />
+          <Route path="/instructor/create-test" element={<CreateTest />} />
+          <Route path="/instructor/test-stats/:testId" element={<TestAnalytics />} />
         </Route>
 
         {/* Specialized Routes without standard layout */}
