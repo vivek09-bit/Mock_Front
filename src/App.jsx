@@ -28,6 +28,7 @@ import ExamDashboard from "./pages/ExamDashboard";
 import TestInstruction from "./pages/TestInstruction";
 import DashboardLayout from "./components/DashboardLayout";
 import MyTests from "./pages/MyTests";
+import StudentLanding from "./pages/StudentLanding";
 
 const DashboardRoute = () => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -64,6 +65,7 @@ const App = () => {
           <Route path='/contact' element={<ContactForm />} />
           <Route path='/page/terms-portal' element={<TermsAndConditions />} />
           <Route path="/test/instruction/:testId" element={<TestInstruction />} />
+          <Route path="/start-test/:testId" element={<StudentLanding />} />
           <Route path='/Test-Submit' element={<TestResult />} />
           <Route path="*" element={<NotFound />} />
         </Route>

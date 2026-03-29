@@ -21,7 +21,10 @@ const CreateTest = () => {
         stage: "Practice",
         duration: 30,
         passingScore: 40,
-        testType: "static"
+        testType: "static",
+        startTime: "",
+        endTime: "",
+        requiredStudentDetails: []
     });
 
     // Manual Questions State
@@ -32,6 +35,7 @@ const CreateTest = () => {
     // AI Generation State
     const [aiPrompt, setAiPrompt] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
+    const [newDetailName, setNewDetailName] = useState(""); // State for dynamic student requirements
 
     const handleMetadataChange = (e) => setTestMetadata({ ...testMetadata, [e.target.name]: e.target.value });
 
@@ -50,13 +54,35 @@ const CreateTest = () => {
         setQuestions(updated);
     };
 
+    const toggleStudentDetail = (detail) => {
+        const current = [...testMetadata.requiredStudentDetails];
+        if (current.includes(detail)) {
+            setTestMetadata({ ...testMetadata, requiredStudentDetails: current.filter(d => d !== detail) });
+        } else {
+            setTestMetadata({ ...testMetadata, requiredStudentDetails: [...current, detail] });
+        }
+    };
+
+    const handleAddCustomDetail = () => {
+        if (!newDetailName.trim()) return;
+        if (testMetadata.requiredStudentDetails.includes(newDetailName.trim())) {
+            alert("This field is already added.");
+            return;
+        }
+        setTestMetadata({ 
+            ...testMetadata, 
+            requiredStudentDetails: [...testMetadata.requiredStudentDetails, newDetailName.trim()] 
+        });
+        setNewDetailName("");
+    };
+
     const handleCreateTest = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError("");
         
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("authToken");
             await axios.post(`${apiBase}/api/instructor/create-test`, 
                 { testData: testMetadata, questions: activeTab === 'manual' ? questions : [] },
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -142,6 +168,77 @@ const CreateTest = () => {
                                 <div className="flex-1">
                                     <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Passing Grade</label>
                                     <input type="number" name="passingScore" value={testMetadata.passingScore} onChange={handleMetadataChange} className="w-full bg-slate-50 border-transparent rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+                        <h2 className="font-bold text-slate-800 border-b pb-4 text-sm">Schedule & Entry</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Start Time (Optional)</label>
+                                <input type="datetime-local" name="startTime" value={testMetadata.startTime} onChange={handleMetadataChange} className="w-full bg-slate-50 border-transparent rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">End Time (Optional)</label>
+                                <input type="datetime-local" name="endTime" value={testMetadata.endTime} onChange={handleMetadataChange} className="w-full bg-slate-50 border-transparent rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Required Student Info</label>
+                                
+                                <div className="space-y-4 pt-2">
+                                    {/* Selected Fields as Chips */}
+                                    <div className="flex flex-wrap gap-2">
+                                        {testMetadata.requiredStudentDetails.map(detail => (
+                                            <div key={detail} className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-xs font-bold border border-indigo-100 animate-scaleIn">
+                                                {detail}
+                                                <button onClick={() => toggleStudentDetail(detail)} className="text-indigo-400 hover:text-red-500 transition-colors">
+                                                    <FaTrash size={10} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {testMetadata.requiredStudentDetails.length === 0 && (
+                                            <p className="text-slate-400 text-xs italic">No requirements added yet</p>
+                                        )}
+                                    </div>
+
+                                    {/* Add New Input similar to Google Forms */}
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            value={newDetailName}
+                                            onChange={(e) => setNewDetailName(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCustomDetail())}
+                                            placeholder="Add custom field (e.g. Roll No)"
+                                            className="flex-1 bg-slate-50 border-transparent rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        />
+                                        <button 
+                                            onClick={handleAddCustomDetail}
+                                            className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition-all shadow-sm"
+                                        >
+                                            <FaPlus />
+                                        </button>
+                                    </div>
+
+                                    {/* Suggestions */}
+                                    <div className="pt-2">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Suggested</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {["Full Name", "Roll Number", "Batch", "Email", "Phone"].map(s => (
+                                                !testMetadata.requiredStudentDetails.includes(s) && (
+                                                    <button 
+                                                        key={s} 
+                                                        onClick={() => toggleStudentDetail(s)}
+                                                        className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded hover:bg-indigo-100 hover:text-indigo-600 transition-all"
+                                                    >
+                                                        + {s}
+                                                    </button>
+                                                )
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

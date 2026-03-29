@@ -84,6 +84,16 @@ const TakeTest = () => {
         setTest({ ...questionsData, questions: finalQuestions });
         setUser(userRes.data);
 
+        // Enforce student details if required by educator
+        const requiredFields = questionsData.requiredStudentDetails || [];
+        if (requiredFields.length > 0) {
+            const savedInfo = localStorage.getItem(`student_info_${testId}`);
+            if (!savedInfo) {
+                navigate(`/start-test/${testId}`);
+                return;
+            }
+        }
+
         const totalRemaining = (questionsData.duration || 60) * 60;
         setTimeLeft(totalRemaining);
 
@@ -214,10 +224,19 @@ const TakeTest = () => {
   const handleSubmit = async () => {
     if (!user) return setError("User not authenticated.");
     try {
+      const studentDetails = JSON.parse(localStorage.getItem(`student_info_${testId}`) || "{}");
+      
       const response = await axios.post(`${apiBase}/api/test/submit`, {
-        testId, userId: user.user._id, answers,
+        testId, 
+        userId: user.user._id, 
+        answers,
+        studentDetails // Send the collected metadata
       }, { headers: { Authorization: `Bearer ${token}` } });
+      
       exitFullScreen();
+      // Clean up metadata after successful submission
+      localStorage.removeItem(`student_info_${testId}`);
+      
       const attemptedCount = Object.keys(answers).length;
       navigate("/Test-Submit", { state: { result: response.data, attempted: attemptedCount } });
     } catch {
