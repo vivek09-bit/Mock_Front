@@ -4,8 +4,9 @@ import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
 
 // Import specialized components
-import StaticTest from "../components/tests/StaticTest";
-import DynamicTest from "../components/tests/DynamicTest";
+import FullMockTest from "../components/tests/FullMockTest";
+import PremockTest from "../components/tests/PremockTest";
+import LiveTest from "../components/tests/LiveTest";
 import DeprecatedTest from "../components/tests/DeprecatedTest";
 
 // Question Status Constants
@@ -53,14 +54,23 @@ const TakeTest = () => {
   useEffect(() => {
     const fetchTestAndUser = async () => {
       try {
-        const [testRes, userRes] = await Promise.all([
+        const fetchPromises = [
           axios.get(`${apiBase}/api/test/${testId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          token ? axios.get(`${apiBase}/api/auth/me`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          })
+        ];
+
+        if (token) {
+          fetchPromises.push(axios.get(`${apiBase}/api/auth/me`, {
             headers: { Authorization: `Bearer ${token}` },
-          }) : Promise.reject("User authentication required."),
-        ]);
+          }));
+        }
+
+        const results = await Promise.allSettled(fetchPromises);
+        const testRes = results[0].status === 'fulfilled' ? results[0].value : null;
+        const userRes = results[1]?.status === 'fulfilled' ? results[1].value : null;
+
+        if (!testRes) throw new Error("Failed to load test metadata.");
         const data = testRes.data;
 
         // Fetch session data
@@ -71,7 +81,7 @@ const TakeTest = () => {
           const startRes = await axios.post(
             `${apiBase}/api/test/start`,
             { testId },
-            { headers: { Authorization: `Bearer ${token}` } }
+            { headers: token ? { Authorization: `Bearer ${token}` } : {} }
           );
           questionsData = startRes.data;
           finalQuestions = startRes.data.questions || [];
@@ -82,7 +92,7 @@ const TakeTest = () => {
         }
 
         setTest({ ...questionsData, questions: finalQuestions });
-        setUser(userRes.data);
+        if (userRes) setUser(userRes.data);
 
         // Enforce student details if required by educator
         const requiredFields = questionsData.requiredStudentDetails || [];
@@ -222,23 +232,26 @@ const TakeTest = () => {
   };
 
   const handleSubmit = async () => {
-    if (!user) return setError("User not authenticated.");
+    // If not logged in, we check if studentDetails exist in localStorage
+    const savedStudentInfo = JSON.parse(localStorage.getItem(`student_info_${testId}`) || "null");
+    
+    if (!user && !savedStudentInfo) {
+        return setError("Please fill in your details first.");
+    }
+
     try {
-      const studentDetails = JSON.parse(localStorage.getItem(`student_info_${testId}`) || "{}");
-      
       const response = await axios.post(`${apiBase}/api/test/submit`, {
         testId, 
-        userId: user.user._id, 
+        userId: user?.user?._id || null, // Allow null for guests
         answers,
-        studentDetails // Send the collected metadata
-      }, { headers: { Authorization: `Bearer ${token}` } });
+        studentDetails: savedStudentInfo // Send the collected metadata
+      }, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
       
       exitFullScreen();
       // Clean up metadata after successful submission
       localStorage.removeItem(`student_info_${testId}`);
       
-      const attemptedCount = Object.keys(answers).length;
-      navigate("/Test-Submit", { state: { result: response.data, attempted: attemptedCount } });
+      navigate("/submission-success");
     } catch {
       setError("Submission failed. Try again.");
     }
@@ -316,11 +329,18 @@ const TakeTest = () => {
   };
 
   let testView;
-  switch (test.testMode) {
-    case "STATIC": testView = <StaticTest {...commonProps} />; break;
-    case "DYNAMIC": testView = <DynamicTest {...commonProps} />; break;
-    case "LEGACY": testView = <DeprecatedTest {...commonProps} />; break;
-    default: testView = <StaticTest {...commonProps} />;
+  switch (test.testModel) {
+    case "fullmock": testView = <FullMockTest {...commonProps} />; break;
+    case "premock": testView = <PremockTest {...commonProps} />; break;
+    case "live": testView = <LiveTest {...commonProps} />; break;
+    case "static": testView = <PremockTest {...commonProps} />; break; // Fallback for old tests
+    case "dynamic": testView = <LiveTest {...commonProps} />; break; // Fallback for old tests
+    default: testView = <PremockTest {...commonProps} />;
+  }
+  
+  // Legacy support for older schema
+  if (!test.testModel && test.testMode === "LEGACY") {
+    testView = <DeprecatedTest {...commonProps} />;
   }
 
   return (

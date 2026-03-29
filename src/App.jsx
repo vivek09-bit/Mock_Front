@@ -29,11 +29,12 @@ import TestInstruction from "./pages/TestInstruction";
 import DashboardLayout from "./components/DashboardLayout";
 import MyTests from "./pages/MyTests";
 import StudentLanding from "./pages/StudentLanding";
+import SubmissionSuccess from "./pages/SubmissionSuccess";
 
 const DashboardRoute = () => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    const role = storedUser?.role;
-    return role === 'ins' ? <InstructorDashboard /> : <ExamDashboard />;
+  const storedUser = JSON.parse(localStorage.getItem('user'));
+  const role = storedUser?.role;
+  return role === 'ins' ? <InstructorDashboard /> : <ExamDashboard />;
 };
 
 const PublicLayout = () => (
@@ -67,7 +68,9 @@ const App = () => {
           <Route path="/test/instruction/:testId" element={<TestInstruction />} />
           <Route path="/start-test/:testId" element={<StudentLanding />} />
           <Route path='/Test-Submit' element={<TestResult />} />
+          <Route path='/submission-success' element={<SubmissionSuccess />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/take-test/:testId" element={<TakeTest />} />
         </Route>
 
         {/* Dashboard Routes with Sidebar */}
@@ -78,7 +81,7 @@ const App = () => {
           <Route path="/profile/:username" element={<Profile />} />
           <Route path="/my-tests" element={<MyTests />} />
           <Route path="/tests" element={<TestList />} />
-          
+
           {/* Instructor Specific Paths */}
           <Route path="/instructor/my-tests" element={<InstructorTestList />} />
           <Route path="/instructor/create-test" element={<CreateTest />} />
@@ -86,7 +89,6 @@ const App = () => {
         </Route>
 
         {/* Specialized Routes without standard layout */}
-        <Route path="/take-test/:testId" element={<TakeTest />} />
       </Routes>
     </Router>
   );

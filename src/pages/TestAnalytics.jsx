@@ -13,7 +13,7 @@ const TestAnalytics = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem('authToken');
                 const res = await axios.get(`${apiBase}/api/instructor/test-stats/${testId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -67,28 +67,36 @@ const TestAnalytics = () => {
                                                     <FaUserCircle className="text-2xl" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-slate-800 font-bold block">{record.userId?.name || 'Anonymous'}</p>
-                                                    <p className="text-slate-400 text-xs font-medium">@{record.userId?.username}</p>
+                                                    <p className="text-slate-800 font-bold block">
+                                                        {record.userId?.name || 
+                                                         record.studentDetails?.Name || 
+                                                         record.studentDetails?.name || 
+                                                         record.studentDetails?.['Full Name'] || 
+                                                         'Anonymous Guest'}
+                                                    </p>
+                                                    <p className="text-slate-400 text-xs font-medium">
+                                                        {record.userId ? `@${record.userId.username}` : (record.studentDetails?.Email || record.studentDetails?.email || 'Guest Session')}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-2 text-slate-500 font-medium text-sm">
                                                 <FaCalendarAlt className="text-slate-300" />
-                                                {new Date(record.startTime).toLocaleDateString()}
+                                                {record.lastAttempted ? new Date(record.lastAttempted).toLocaleDateString() : 'N/A'}
                                             </div>
                                         </td>
                                         <td className="px-8 py-5">
                                             <div className="space-y-1">
-                                                <span className={`text-lg font-extrabold ${record.score >= record.passingScore ? 'text-teal-600' : 'text-red-500'}`}>
-                                                    {record.score}
+                                                <span className={`text-lg font-extrabold ${record.bestScore >= (record.testDetails?.passingScore || 0) ? 'text-teal-600' : 'text-red-500'}`}>
+                                                    {record.bestScore}
                                                 </span>
                                                 <span className="text-slate-300 mx-1">/</span>
-                                                <span className="text-slate-500 text-xs font-bold">{record.totalMarks}</span>
+                                                <span className="text-slate-500 text-xs font-bold">{record.testDetails?.totalQuestions || 0}</span>
                                             </div>
                                         </td>
                                         <td className="px-8 py-5">
-                                            {record.score >= record.passingScore ? (
+                                            {record.bestScore >= (record.testDetails?.passingScore || 0) ? (
                                                 <span className="inline-flex items-center gap-2 text-teal-600 bg-teal-50 px-3 py-1 rounded-full text-xs font-bold uppercase">
                                                     <FaCheckCircle /> Qualified
                                                 </span>

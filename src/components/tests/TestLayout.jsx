@@ -19,6 +19,7 @@ const TestLayout = ({
   markForReview,
   clearResponse,
   saveAndNext,
+  proctoringSidebar,
   children
 }) => {
   return (
@@ -58,8 +59,15 @@ const TestLayout = ({
           </div>
           <div className="flex items-center gap-2 p-2 bg-blue-100 border-b border-blue-200">
             <div className="w-9 h-9 rounded-full bg-purple-700 text-white flex items-center justify-center font-bold">{user?.user?.name?.charAt(0) || 'U'}</div>
-            <div className="text-xs font-bold">{user?.user?.name}</div>
+            <div className="text-xs font-bold">{user?.user?.name || "Guest Student"}</div>
           </div>
+
+          {/* Proctoring Sidebar (Camera View) */}
+          {proctoringSidebar && (
+            <div className="border-b border-gray-300">
+              {proctoringSidebar}
+            </div>
+          )}
 
           <div className="p-2 grid grid-cols-2 gap-2 text-xs border-b border-gray-300 bg-white">
             <div className="flex items-center gap-1"><div className="w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center text-[0.625rem]">{counts.answered}</div> Answered</div>

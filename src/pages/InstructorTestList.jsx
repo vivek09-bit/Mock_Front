@@ -90,15 +90,23 @@ const InstructorTestList = () => {
                           {test.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-slate-800 font-bold block">{test.name}</p>
+                          <div className="flex items-center gap-2">
+                             <p className="text-slate-800 font-bold block">{test.name}</p>
+                             {test.accessPasscode && <FaLock className="text-[10px] text-amber-500" title="Password Protected" />}
+                          </div>
                           <p className="text-slate-400 text-xs font-medium">{test.category} • {test.examTarget}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-8 py-5">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${test.testType === 'static' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
-                        {test.testType}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase w-fit ${test.testType === 'static' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                            {test.testType}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                            Mode: {test.testModel || 'static'}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-8 py-5">
                       <span className="font-bold text-slate-700">24</span>
