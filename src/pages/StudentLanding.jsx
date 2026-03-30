@@ -2,13 +2,13 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
-import { FaClock, FaClipboardList, FaArrowRight, FaLock } from 'react-icons/fa';
+import { FaClock, FaClipboardList, FaBolt, FaArrowRight, FaLock } from 'react-icons/fa';
 
 const StudentLanding = () => {
     const { testId } = useParams();
     const navigate = useNavigate();
     const { apiBase } = useContext(ThemeContext);
-    
+
     const [test, setTest] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -20,14 +20,14 @@ const StudentLanding = () => {
             try {
                 const res = await axios.get(`${apiBase}/api/instructor/public/test-info/${testId}`);
                 const testData = res.data.test;
-                
+
                 if (!testData.isPublished) {
                     setError("This test is not yet published by the educator.");
                     return;
                 }
 
                 setTest(testData);
-                
+
                 // Initialize form state
                 const initialForm = {};
                 testData.requiredStudentDetails.forEach(detail => initialForm[detail] = "");
@@ -101,11 +101,11 @@ const StudentLanding = () => {
                 </div>
                 <h1 className="text-2xl font-bold text-white">Access Denied</h1>
                 <p className="text-slate-400">{error}</p>
-                <button 
-                  onClick={() => navigate('/')}
-                  className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-all"
+                <button
+                    onClick={() => navigate('/')}
+                    className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-all"
                 >
-                  Return to Home
+                    Return to Home
                 </button>
             </div>
         </div>
@@ -124,8 +124,26 @@ const StudentLanding = () => {
 
                 <div className="bg-[#1e293b] border border-slate-700 rounded-3xl overflow-hidden shadow-2xl shadow-black/40">
                     <div className="p-8 md:p-12 space-y-10">
-                        
-                        {timeLeftToStart > 0 ? (
+
+                        {test.testModel === 'live' ? (
+                            <div className="text-center space-y-8 py-6">
+                                <div className="w-24 h-24 bg-amber-500/10 rounded-[2rem] flex items-center justify-center mx-auto text-amber-500 shadow-xl shadow-amber-500/5 rotate-12">
+                                    <FaBolt className="text-4xl animate-pulse" />
+                                </div>
+                                <div className="space-y-4">
+                                    <h2 className="text-3xl font-black text-white tracking-tight leading-tight">Interactive Live Session</h2>
+                                    <p className="text-slate-400 font-medium max-w-sm mx-auto">
+                                        This is a synchronized live battle. You'll need the session passcode from your instructor to join the arena.
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => navigate(`/live/join/${testId}`)}
+                                    className="w-full bg-amber-500 text-[#0f172a] py-5 rounded-2xl font-black text-xl hover:bg-amber-400 transition-all shadow-xl shadow-amber-900/40 transform active:scale-[0.98]"
+                                >
+                                    Jump to Arena
+                                </button>
+                            </div>
+                        ) : timeLeftToStart > 0 ? (
                             <div className="text-center space-y-6">
                                 <div className="w-20 h-20 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto text-indigo-500 animate-pulse">
                                     <FaClock className="text-3xl" />
@@ -169,7 +187,7 @@ const StudentLanding = () => {
                                     )}
                                 </div>
 
-                                <button 
+                                <button
                                     type="submit"
                                     className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-bold text-lg hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-900/40 flex items-center justify-center gap-3 group"
                                 >

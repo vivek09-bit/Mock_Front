@@ -1,88 +1,81 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import TestLayout from "./TestLayout";
-import { FaBolt, FaQuestionCircle } from "react-icons/fa";
+import { FaBolt, FaQuestionCircle, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 const LiveTest = (props) => {
   const {
     test,
     currentQuestionIndex,
-    answers,
     handleAnswerChange,
-    isMobile,
+    isHost = false,
     ...rest
   } = props;
 
-  const currentQuestion = test?.questions?.[currentQuestionIndex];
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [hasResponded, setHasResponded] = useState(false);
 
-  // LaTeX Rendering
   useEffect(() => {
-    if (window.MathJax) {
-      window.MathJax.typesetPromise();
-    }
-  }, [currentQuestionIndex, test]);
+    setSelectedOption(null);
+    setHasResponded(false);
+  }, [currentQuestionIndex]);
+
+  const onOptionClick = (key) => {
+    if (hasResponded) return;
+    setSelectedOption(key);
+    setHasResponded(true);
+    handleAnswerChange(key);
+  };
+
+  const optionStyles = {
+    A: "bg-red-500 hover:bg-red-600 shadow-red-200",
+    B: "bg-blue-500 hover:bg-blue-600 shadow-blue-200",
+    C: "bg-amber-500 hover:bg-amber-600 shadow-amber-200",
+    D: "bg-teal-500 hover:bg-teal-600 shadow-teal-200"
+  };
 
   return (
-    <TestLayout
-      test={test}
-      currentQuestionIndex={currentQuestionIndex}
-      currentQuestion={currentQuestion}
-      answers={answers}
-      handleAnswerChange={handleAnswerChange}
-      isMobile={isMobile}
-      {...rest}
-    >
-      <div className="flex-1 bg-white p-12 overflow-y-auto flex flex-col items-center">
-        <div className="max-w-2xl w-full">
-            <div className="flex items-center gap-3 mb-8">
-                <div className="bg-amber-500 text-white w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30">
-                    <FaBolt />
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 lg:p-12 animate-fadeIn transition-colors duration-500">
+        <div className="max-w-4xl w-full space-y-8 text-center">
+            <header className="mb-10 animate-slideDown">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 rounded-full text-indigo-700 text-xs font-black uppercase tracking-widest mb-4">
+                   <FaBolt /> Question {currentQuestionIndex + 1}
                 </div>
-                <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Active Live Session</span>
-                    <h2 className="text-xl font-bold text-slate-900">{test.name}</h2>
-                </div>
-            </div>
+                <h1 className="text-4xl lg:text-5xl font-black text-slate-800 tracking-tight">Focus on the Host Screen!</h1>
+            </header>
 
-            <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 mb-10 shadow-sm border-b-4 border-b-slate-200">
-                <div className="flex items-center gap-2 mb-4">
-                    <FaQuestionCircle className="text-slate-400 text-xs" />
-                    <span className="text-[10px] font-bold text-slate-400 tracking-tighter uppercase">Question {currentQuestionIndex + 1} of {test.questions.length}</span>
+            {!hasResponded ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+                    {['A', 'B', 'C', 'D'].map(key => (
+                        <button
+                            key={key}
+                            onClick={() => onOptionClick(key)}
+                            className={`h-48 lg:h-64 rounded-[3rem] text-6xl font-black text-white shadow-2xl transition-all active:scale-95 group relative overflow-hidden ${optionStyles[key]}`}
+                        >
+                            {key}
+                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </button>
+                    ))}
                 </div>
-                <div 
-                    className="text-2xl text-slate-800 font-bold leading-tight"
-                    dangerouslySetInnerHTML={{ __html: currentQuestion?.question?.text || "" }}
-                />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {currentQuestion?.options?.map((opt, idx) => {
-                const isSelected = answers[currentQuestion._id] === opt.key;
-                return (
-                <label
-                    key={idx}
-                    className={`flex items-center gap-4 cursor-pointer p-6 rounded-[2.5rem] border-2 transition-all duration-300 ${isSelected ? 'border-amber-500 bg-amber-50 shadow-xl shadow-amber-500/10 active:scale-[0.98]' : 'border-slate-100 bg-white hover:border-slate-200 active:scale-[0.98]'}`}
-                >
-                    <input
-                    type="radio"
-                    name="opt"
-                    className="hidden"
-                    checked={isSelected}
-                    onChange={() => handleAnswerChange(opt.key)}
-                    />
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm transition-all ${isSelected ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/50' : 'bg-slate-100 text-slate-400'}`}>
-                    {opt.key}
+            ) : (
+                <div className="animate-zoomIn flex flex-col items-center justify-center py-20 space-y-6">
+                    <div className="w-32 h-32 bg-indigo-600 rounded-[2.5rem] flex items-center justify-center text-white text-5xl shadow-2xl animate-bounce">
+                        <FaCheckCircle />
                     </div>
-                    <span 
-                    className={`text-lg font-bold ${isSelected ? 'text-amber-700' : 'text-slate-700'}`}
-                    dangerouslySetInnerHTML={{ __html: opt.text }}
-                    />
-                </label>
-                )
-            })}
-            </div>
+                    <div className="space-y-2">
+                        <h2 className="text-4xl font-black text-slate-800 tracking-tighter">Response Locked!</h2>
+                        <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Waiting for the next round...</p>
+                    </div>
+                    <div className="px-8 py-3 bg-white border border-slate-100 rounded-2xl text-slate-500 font-bold text-xl shadow-sm">
+                        You chose Option <span className="text-indigo-600 font-black">{selectedOption}</span>
+                    </div>
+                </div>
+            )}
         </div>
-      </div>
-    </TestLayout>
+
+        {/* Decorative elements */}
+        <div className="fixed -bottom-20 -left-20 w-80 h-80 bg-red-400/5 rounded-full blur-[100px] -z-10"></div>
+        <div className="fixed -top-20 -right-20 w-80 h-80 bg-blue-400/5 rounded-full blur-[100px] -z-10"></div>
+    </div>
   );
 };
 

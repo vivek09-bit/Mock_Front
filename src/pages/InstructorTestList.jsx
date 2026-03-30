@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
-import { FaChartBar, FaEye, FaTrash, FaEdit, FaChevronRight, FaShareAlt, FaGlobe, FaLock } from 'react-icons/fa';
+import { FaChartBar, FaEye, FaBolt, FaTrash, FaEdit, FaChevronRight, FaShareAlt, FaGlobe, FaLock } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const InstructorTestList = () => {
@@ -45,6 +45,21 @@ const InstructorTestList = () => {
     const link = `${window.location.origin}/start-test/${testId}`;
     navigator.clipboard.writeText(link);
     alert("Shareable link copied to clipboard!");
+  };
+
+  const handleDelete = async (testId) => {
+    if (!window.confirm("Are you sure you want to delete this test permanently? This action cannot be undone.")) return;
+
+    try {
+      const token = localStorage.getItem('authToken');
+      await axios.delete(`${apiBase}/api/instructor/delete-test/${testId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTests(); // Refresh
+      alert("Test deleted successfully!");
+    } catch (err) {
+      alert("Failed to delete test.");
+    }
   };
 
   return (
@@ -91,8 +106,8 @@ const InstructorTestList = () => {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                             <p className="text-slate-800 font-bold block">{test.name}</p>
-                             {test.accessPasscode && <FaLock className="text-[10px] text-amber-500" title="Password Protected" />}
+                            <p className="text-slate-800 font-bold block">{test.name}</p>
+                            {test.accessPasscode && <FaLock className="text-[10px] text-amber-500" title="Password Protected" />}
                           </div>
                           <p className="text-slate-400 text-xs font-medium">{test.category} • {test.examTarget}</p>
                         </div>
@@ -101,10 +116,10 @@ const InstructorTestList = () => {
                     <td className="px-8 py-5">
                       <div className="flex flex-col gap-1">
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase w-fit ${test.testType === 'static' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
-                            {test.testType}
+                          {test.testType}
                         </span>
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-                            Mode: {test.testModel || 'static'}
+                          Mode: {test.testModel || 'static'}
                         </span>
                       </div>
                     </td>
@@ -144,6 +159,15 @@ const InstructorTestList = () => {
                             <FaShareAlt />
                           </button>
                         )}
+                        {test.testModel === 'live' && (
+                          <Link
+                            to={`/live/host/${test._id}`}
+                            className="p-2 text-amber-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors outline-none"
+                            title="Launch Live Battle"
+                          >
+                            <FaBolt className="animate-pulse" />
+                          </Link>
+                        )}
                         <Link
                           to={`/instructor/test-stats/${test._id}`}
                           className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
@@ -151,7 +175,11 @@ const InstructorTestList = () => {
                         >
                           <FaChartBar />
                         </Link>
-                        <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                        <button 
+                          onClick={() => handleDelete(test._id)}
+                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" 
+                          title="Delete"
+                        >
                           <FaTrash />
                         </button>
                       </div>

@@ -47,10 +47,16 @@ function Header() {
               </Link>
             </li>
             <li>
+              <Link to="/pricing" className="hover:text-gray-200">
+                Pricing
+              </Link>
+            </li>
+            {/* <li>
               <Link to="/typing" className="hover:text-gray-200">
                 Typing
               </Link>
-            </li>
+            </li> */}
+
 
             <li>
               <Link to="/faqspage" className="hover:text-gray-200">
@@ -144,13 +150,22 @@ function Header() {
           </li>
           <li>
             <Link
+              to="/pricing"
+              className="block hover:text-blue-200"
+              onClick={closeSlider}
+            >
+              Pricing
+            </Link>
+          </li>
+          {/* <li>
+            <Link
               to="/typing"
               className="block hover:text-blue-200"
               onClick={closeSlider}
             >
               Typing
             </Link>
-          </li>
+          </li> */}
 
           <li>
             <Link
@@ -161,7 +176,7 @@ function Header() {
               dashboard
             </Link>
           </li>
-          
+
           <li>
             <Link
               to="/about"

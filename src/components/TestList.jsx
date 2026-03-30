@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
 import { Link, useSearchParams } from "react-router-dom";
-import { FaFilter, FaUniversity, FaBook, FaTrain, FaGlobe, FaLayerGroup, FaGraduationCap } from 'react-icons/fa';
+import { FaFilter, FaUniversity, FaBook, FaTrain, FaGlobe, FaLayerGroup, FaGraduationCap, FaRegFileAlt, FaClock, FaChevronRight } from 'react-icons/fa';
 
 const TestList = () => {
   const [tests, setTests] = useState([]);
@@ -145,18 +145,47 @@ const TestList = () => {
         ) : (
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
             {tests.map((test) => (
-              <div key={test._id} className="bg-white shadow-sm hover:shadow-xl rounded-2xl p-6 border border-blue-100 flex flex-col group relative overflow-hidden transition-all">
-                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 transform -translate-x-full group-hover:translate-x-0 transition-transform" />
-                <div className="flex justify-between items-start mb-3">
-                  <span className="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1 rounded-full uppercase">{test.stage || 'Prelims'}</span>
-                  <span className="text-blue-400 text-xs font-semibold">{test.type || 'Sectional'}</span>
+              <div key={test._id} className="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-300 flex flex-col relative overflow-hidden">
+                {/* Accent line */}
+                <div className="absolute top-0 left-0 w-1.5 h-0 bg-indigo-600 group-hover:h-full transition-all duration-300" />
+
+                <div className="flex justify-between items-start mb-4">
+                  <span className="bg-indigo-50 text-indigo-700 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider border border-indigo-100">
+                    {test.stage || 'Prelims'}
+                  </span>
+                  <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg">
+                    {test.type || 'Sectional'}
+                  </span>
                 </div>
-                <h3 className="text-lg font-bold text-blue-800 mb-2 line-clamp-1">{test.name}</h3>
-                <p className="text-blue-500 text-sm mb-6 line-clamp-2 h-10">{test.description}</p>
-                <div className="flex items-center justify-between border-t border-blue-50 pt-4 mt-auto">
-                  <div className="text-xs text-blue-400 font-medium">{getQuestionCount(test)} Questions</div>
-                  <Link to={`/test/instruction/${test._id}`} className="bg-blue-900 hover:bg-purple-900 text-white font-bold py-2 px-6 rounded-lg text-sm transition-all active:scale-95">
-                    Start Test
+
+                <div className="flex-1">
+                  <h3 className="text-xl font-black text-slate-800 mb-2 leading-tight group-hover:text-indigo-600 transition-colors line-clamp-1">
+                    {test.name}
+                  </h3>
+                  <p className="text-slate-500 text-sm font-medium leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                    {test.description || "No description provided for this mock test."}
+                  </p>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between">
+                  <div className="flex items-center gap-4 text-slate-400 font-bold text-[11px]">
+                    <div className="flex items-center gap-1.5">
+                      <FaRegFileAlt className="text-indigo-400" />
+                      {getQuestionCount(test)} Qs
+                    </div>
+                    {test.duration && (
+                      <div className="flex items-center gap-1.5">
+                        <FaClock className="text-indigo-400" />
+                        {test.duration} Min
+                      </div>
+                    )}
+                  </div>
+
+                  <Link 
+                    to={`/test/instruction/${test._id}`} 
+                    className="flex items-center gap-2 bg-slate-900 hover:bg-indigo-600 text-white text-xs font-black py-2.5 px-5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-slate-200 group/btn"
+                  >
+                    Start <FaChevronRight className="text-[8px] group-hover/btn:translate-x-1 transition-transform" />
                   </Link>
                 </div>
               </div>

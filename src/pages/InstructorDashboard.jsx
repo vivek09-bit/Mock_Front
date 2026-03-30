@@ -5,22 +5,38 @@ import { FaBook, FaUsers, FaChartLine, FaPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const InstructorDashboard = () => {
-  const [stats, setStats] = useState({ totalTests: 0, totalAttempts: 0, avgScore: 0 });
+  const [stats, setStats] = useState({ totalTests: 0, totalStudents: 0, avgScore: 0 });
   const [loading, setLoading] = useState(true);
   const { apiBase } = useContext(ThemeContext);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get(`${apiBase}/api/instructor/my-tests`, {
+        const token = localStorage.getItem('authToken');
+        
+        // Fetch tests
+        const testsRes = await axios.get(`${apiBase}/api/instructor/my-tests`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        const tests = testsRes.data.tests;
         
-        const tests = res.data.tests;
-        setStats(prev => ({ ...prev, totalTests: tests.length }));
+        // Fetch students (to get unique count)
+        const studentsRes = await axios.get(`${apiBase}/api/instructor/all-students`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const students = studentsRes.data.students || [];
         
-        // In a real app, we'd fetch more granular stats here
+        // Calculate average score across all students
+        const avgScore = students.length > 0 
+          ? Math.round(students.reduce((acc, s) => acc + s.avgScore, 0) / students.length)
+          : 0;
+        
+        setStats({
+          totalTests: tests.length,
+          totalStudents: students.length,
+          avgScore: avgScore
+        });
+        
         setLoading(false);
       } catch (err) {
         console.error("Error loading dashboard stats", err);
@@ -30,8 +46,8 @@ const InstructorDashboard = () => {
     fetchDashboardData();
   }, [apiBase]);
 
-  const StatCard = ({ title, value, icon, color }) => (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 transition-transform hover:scale-[1.02]">
+  const StatCard = ({ title, value, icon, color, link }) => (
+    <Link to={link || '#'} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 transition-transform hover:scale-[1.02]">
       <div className={`p-4 rounded-xl ${color} text-white text-2xl`}>
         {icon}
       </div>
@@ -39,7 +55,7 @@ const InstructorDashboard = () => {
         <p className="text-slate-500 text-sm font-medium">{title}</p>
         <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
       </div>
-    </div>
+    </Link>
   );
 
   return (
@@ -58,9 +74,9 @@ const InstructorDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total Tests" value={stats.totalTests} icon={<FaBook />} color="bg-blue-500" />
-        <StatCard title="Total Students" value="128" icon={<FaUsers />} color="bg-purple-500" />
-        <StatCard title="Avg. Score" value="74%" icon={<FaChartLine />} color="bg-teal-500" />
+        <StatCard title="Total Tests" value={stats.totalTests} icon={<FaBook />} color="bg-blue-500" link="/instructor/my-tests" />
+        <StatCard title="Total Students" value={stats.totalStudents} icon={<FaUsers />} color="bg-purple-500" link="/instructor/students" />
+        <StatCard title="Avg. Score" value={`${stats.avgScore}%`} icon={<FaChartLine />} color="bg-teal-500" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

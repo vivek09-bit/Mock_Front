@@ -1,118 +1,306 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
-import { FaUserCircle, FaCalendarAlt, FaCheckCircle, FaTimesCircle, FaChevronLeft } from 'react-icons/fa';
+import { 
+    FaUserCircle, FaCalendarAlt, FaCheckCircle, FaTimesCircle, 
+    FaChevronLeft, FaSearch, FaFileDownload, FaFlag, FaBan, FaFilter 
+} from 'react-icons/fa';
 
 const TestAnalytics = () => {
     const { testId } = useParams();
     const [stats, setStats] = useState([]);
+    const [summary, setSummary] = useState(null);
+    const [requiredFields, setRequiredFields] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("all");
     const { apiBase } = useContext(ThemeContext);
 
+    const fetchData = async () => {
+        try {
+            const token = localStorage.getItem('authToken');
+            const res = await axios.get(`${apiBase}/api/instructor/test-stats/${testId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setStats(res.data.stats || []);
+            setSummary(res.data.summary);
+            setRequiredFields(res.data.requiredFields || []);
+            setLoading(false);
+        } catch (err) {
+            console.error("Error loading stats", err);
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const token = localStorage.getItem('authToken');
-                const res = await axios.get(`${apiBase}/api/instructor/test-stats/${testId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setStats(res.data.stats);
-                setLoading(false);
-            } catch (err) {
-                console.error("Error loading stats", err);
-                setLoading(false);
-            }
-        };
-        fetchStats();
+        fetchData();
     }, [apiBase, testId]);
 
+    const handleFlag = async (recordId, currentFlagged) => {
+        const reason = !currentFlagged ? prompt("Reason for flagging this student?") : "";
+        if (!currentFlagged && reason === null) return;
+
+        try {
+            const token = localStorage.getItem('authToken');
+            await axios.post(`${apiBase}/api/instructor/flag-student`, 
+                { recordId, isFlagged: !currentFlagged, reason },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            fetchData();
+        } catch (err) {
+            alert("Failed to update flag status");
+        }
+    };
+
+    const handleBlacklist = async (record) => {
+        const reason = prompt(`Reason for blacklisting ${record.userId?.name || record.studentDetails?.Name || 'this student'}?`);
+        if (reason === null) return;
+
+        try {
+            const token = localStorage.getItem('authToken');
+            await axios.post(`${apiBase}/api/instructor/blacklist-student`, 
+                { 
+                    email: record.studentDetails?.Email || record.studentDetails?.email || record.userId?.email,
+                    userId: record.userId?._id,
+                    reason 
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert("Student added to blacklist. They will be blocked from future assessments.");
+        } catch (err) {
+            alert(err.response?.data?.message || "Failed to blacklist student");
+        }
+    };
+
+    const filteredStats = useMemo(() => {
+        return stats.filter(record => {
+            const name = (record.userId?.name || record.studentDetails?.Name || record.studentDetails?.name || "").toLowerCase();
+            const email = (record.userId?.email || record.studentDetails?.Email || record.studentDetails?.email || "").toLowerCase();
+            
+            // Search in custom fields too
+            const customFieldsText = Object.values(record.studentDetails || {}).join(" ").toLowerCase();
+            
+            const matchesSearch = name.includes(searchTerm.toLowerCase()) || 
+                                email.includes(searchTerm.toLowerCase()) || 
+                                customFieldsText.includes(searchTerm.toLowerCase());
+
+            const isQualified = record.bestScore >= (record.testDetails?.passingScore || 0);
+            const matchesStatus = statusFilter === "all" || 
+                                (statusFilter === "qualified" && isQualified) || 
+                                (statusFilter === "failed" && !isQualified);
+
+            return matchesSearch && matchesStatus;
+        });
+    }, [stats, searchTerm, statusFilter]);
+
+    const exportToCSV = () => {
+        if (filteredStats.length === 0) return;
+
+        // Headers: Basic + Dynamic Fields
+        const headers = ["Name", "Email", "Date", "Score", "Status", ...requiredFields];
+        
+        const rows = filteredStats.map(r => {
+            const isQualified = r.bestScore >= (r.testDetails?.passingScore || 0);
+            return [
+                r.userId?.name || r.studentDetails?.Name || r.studentDetails?.name || 'Anonymous',
+                r.userId?.email || r.studentDetails?.Email || r.studentDetails?.email || 'N/A',
+                new Date(r.lastAttempted).toLocaleDateString(),
+                r.bestScore,
+                isQualified ? "QUALIFIED" : "FAILED",
+                ...requiredFields.map(f => r.studentDetails?.[f] || 'N/A')
+            ].join(",");
+        });
+
+        const csvContent = [headers.join(","), ...rows].join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Results_${testId}.csv`;
+        a.click();
+    };
+
+    if (loading) return (
+        <div className="flex justify-center items-center h-screen space-x-2">
+            <div className="w-3 h-3 bg-indigo-600 rounded-full animate-bounce"></div>
+            <div className="w-3 h-3 bg-indigo-600 rounded-full animate-bounce delay-100"></div>
+            <div className="w-3 h-3 bg-indigo-600 rounded-full animate-bounce delay-200"></div>
+        </div>
+    );
+
     return (
-        <div className="space-y-8 animate-fadeIn">
-            <header className="flex items-center gap-6">
-                <Link to="/instructor/my-tests" className="p-3 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-slate-400 hover:text-indigo-600">
-                    <FaChevronLeft />
-                </Link>
-                <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Student Performance</h1>
-                    <p className="text-slate-500 font-medium">Detailed audit trail for your assessment</p>
+        <div className="space-y-8 animate-fadeIn pb-10">
+            {/* Header */}
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex items-center gap-6">
+                    <Link to="/instructor/my-tests" className="p-3 bg-white border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-slate-400 hover:text-indigo-600">
+                        <FaChevronLeft />
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Quality Audit</h1>
+                        <p className="text-slate-500 font-medium">Monitoring {summary?.totalAttempts || 0} candidate interactions</p>
+                    </div>
                 </div>
+                <button 
+                    onClick={exportToCSV}
+                    className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg"
+                >
+                    <FaFileDownload /> Export CSV
+                </button>
             </header>
 
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Qualified Rate</p>
+                    <div className="flex items-end gap-2">
+                        <h3 className="text-3xl font-black text-indigo-600">
+                            {summary?.totalAttempts ? Math.round((summary.qualifiedCount / summary.totalAttempts) * 100) : 0}%
+                        </h3>
+                        <p className="text-slate-400 text-sm mb-1 font-medium">{summary?.qualifiedCount} Students</p>
+                    </div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Mean Score</p>
+                    <div className="flex items-end gap-2">
+                        <h3 className="text-3xl font-black text-teal-600">{summary?.avgScore || 0}%</h3>
+                        <p className="text-slate-400 text-sm mb-1 font-medium">Average Performance</p>
+                    </div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Failure Volume</p>
+                    <div className="flex items-end gap-2">
+                        <h3 className="text-3xl font-black text-red-500">{summary?.failedCount || 0}</h3>
+                        <p className="text-slate-400 text-sm mb-1 font-medium">Need Reinforcement</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Filters Bar */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="relative w-full md:w-96">
+                    <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input 
+                        type="text" 
+                        placeholder="Search name, email, or roll no..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-white rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm font-medium"
+                    />
+                </div>
+                <div className="flex bg-white p-1 rounded-xl border border-slate-200 w-full md:w-auto">
+                    {['all', 'qualified', 'failed'].map(f => (
+                        <button
+                            key={f}
+                            onClick={() => setStatusFilter(f)}
+                            className={`flex-1 md:w-28 py-2 rounded-lg text-xs font-bold capitalize transition-all ${statusFilter === f ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                        >
+                            {f}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Main Table */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-100">
-                                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Candidate</th>
-                                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Attempt Date</th>
-                                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Score</th>
-                                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                                <th className="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Details</th>
+                                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Candidate</th>
+                                {requiredFields.map(field => (
+                                    <th key={field} className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{field}</th>
+                                ))}
+                                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Performance</th>
+                                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Moderation</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {stats.length === 0 && !loading ? (
+                            {filteredStats.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="px-8 py-10 text-center text-slate-400 font-medium italic">
-                                        No attempts recorded for this test yet.
+                                    <td colSpan={requiredFields.length + 4} className="px-8 py-20 text-center">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <FaFilter className="text-4xl text-slate-200" />
+                                            <p className="text-slate-400 font-bold italic">No candidates match your filters.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
-                                stats.map((record) => (
-                                    <tr key={record._id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-8 py-5">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                                                    <FaUserCircle className="text-2xl" />
+                                filteredStats.map((record) => {
+                                    const isQualified = record.bestScore >= (record.testDetails?.passingScore || 0);
+                                    return (
+                                        <tr key={record._id} className={`hover:bg-slate-50/50 transition-colors group ${record.isFlagged ? 'bg-amber-50/30' : ''}`}>
+                                            <td className="px-8 py-5">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0">
+                                                        <FaUserCircle className="text-2xl" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-slate-800 font-bold block leading-tight">
+                                                            {record.userId?.name || record.studentDetails?.Name || record.studentDetails?.name || 'Guest'}
+                                                        </p>
+                                                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-tighter">
+                                                            {record.userId?.email || record.studentDetails?.Email || record.studentDetails?.email || 'Individual Session'}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="text-slate-800 font-bold block">
-                                                        {record.userId?.name || 
-                                                         record.studentDetails?.Name || 
-                                                         record.studentDetails?.name || 
-                                                         record.studentDetails?.['Full Name'] || 
-                                                         'Anonymous Guest'}
-                                                    </p>
-                                                    <p className="text-slate-400 text-xs font-medium">
-                                                        {record.userId ? `@${record.userId.username}` : (record.studentDetails?.Email || record.studentDetails?.email || 'Guest Session')}
-                                                    </p>
+                                            </td>
+                                            
+                                            {/* Dynamic Custom Fields */}
+                                            {requiredFields.map(field => (
+                                                <td key={field} className="px-8 py-5">
+                                                    <span className="text-slate-600 font-bold text-sm">
+                                                        {record.studentDetails?.[field] || <span className="text-slate-300">—</span>}
+                                                    </span>
+                                                </td>
+                                            ))}
+
+                                            <td className="px-8 py-5">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className={`text-lg font-black leading-none ${isQualified ? 'text-teal-600' : 'text-red-500'}`}>
+                                                        {record.bestScore}%
+                                                    </span>
+                                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                                        Passed: {record.testDetails?.passingScore}%
+                                                    </span>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <div className="flex items-center gap-2 text-slate-500 font-medium text-sm">
-                                                <FaCalendarAlt className="text-slate-300" />
-                                                {record.lastAttempted ? new Date(record.lastAttempted).toLocaleDateString() : 'N/A'}
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <div className="space-y-1">
-                                                <span className={`text-lg font-extrabold ${record.bestScore >= (record.testDetails?.passingScore || 0) ? 'text-teal-600' : 'text-red-500'}`}>
-                                                    {record.bestScore}
-                                                </span>
-                                                <span className="text-slate-300 mx-1">/</span>
-                                                <span className="text-slate-500 text-xs font-bold">{record.testDetails?.totalQuestions || 0}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            {record.bestScore >= (record.testDetails?.passingScore || 0) ? (
-                                                <span className="inline-flex items-center gap-2 text-teal-600 bg-teal-50 px-3 py-1 rounded-full text-xs font-bold uppercase">
-                                                    <FaCheckCircle /> Qualified
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-2 text-red-500 bg-red-50 px-3 py-1 rounded-full text-xs font-bold uppercase">
-                                                    <FaTimesCircle /> Failed
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-8 py-5 text-right">
-                                            <button className="text-indigo-600 font-bold text-sm hover:underline underline-offset-4 decoration-2">
-                                                View Response
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
+                                            </td>
+
+                                            <td className="px-8 py-5">
+                                                {isQualified ? (
+                                                    <span className="inline-flex items-center gap-2 text-teal-600 bg-teal-50 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                                        <FaCheckCircle /> Qualified
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-2 text-red-500 bg-red-50 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                                        <FaTimesCircle /> Failed
+                                                    </span>
+                                                )}
+                                            </td>
+
+                                            <td className="px-8 py-5 text-right">
+                                                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button 
+                                                        onClick={() => handleFlag(record._id, record.isFlagged)}
+                                                        className={`p-2 rounded-lg transition-colors ${record.isFlagged ? 'bg-amber-100 text-amber-600' : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500'}`}
+                                                        title={record.isFlagged ? `Flagged: ${record.flagReason}` : "Flag for Review"}
+                                                    >
+                                                        <FaFlag />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleBlacklist(record)}
+                                                        className="p-2 text-slate-400 hover:bg-slate-100 hover:text-red-600 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                                                        title="Blacklist from future tests"
+                                                    >
+                                                        <FaBan />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>

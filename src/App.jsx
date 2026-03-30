@@ -30,6 +30,14 @@ import DashboardLayout from "./components/DashboardLayout";
 import MyTests from "./pages/MyTests";
 import StudentLanding from "./pages/StudentLanding";
 import SubmissionSuccess from "./pages/SubmissionSuccess";
+import GlobalLiveJoin from "./pages/GlobalLiveJoin";
+import Pricing from "./pages/Pricing";
+
+
+import InstructorStudentManagement from "./pages/InstructorStudentManagement";
+import LiveSessionHost from "./pages/LiveSessionHost";
+import LiveSessionJoin from "./pages/LiveSessionJoin";
+import InstructorProtectedRoute from "./components/InstructorProtectedRoute";
 
 const DashboardRoute = () => {
   const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -69,8 +77,12 @@ const App = () => {
           <Route path="/start-test/:testId" element={<StudentLanding />} />
           <Route path='/Test-Submit' element={<TestResult />} />
           <Route path='/submission-success' element={<SubmissionSuccess />} />
+          <Route path='/join' element={<GlobalLiveJoin />} />
+          <Route path='/pricing' element={<Pricing />} />
+
           <Route path="*" element={<NotFound />} />
           <Route path="/take-test/:testId" element={<TakeTest />} />
+          <Route path="/live/join/:testId" element={<LiveSessionJoin />} />
         </Route>
 
         {/* Dashboard Routes with Sidebar */}
@@ -82,10 +94,14 @@ const App = () => {
           <Route path="/my-tests" element={<MyTests />} />
           <Route path="/tests" element={<TestList />} />
 
-          {/* Instructor Specific Paths */}
-          <Route path="/instructor/my-tests" element={<InstructorTestList />} />
-          <Route path="/instructor/create-test" element={<CreateTest />} />
-          <Route path="/instructor/test-stats/:testId" element={<TestAnalytics />} />
+          {/* Instructor Specific Paths protected by role */}
+          <Route element={<InstructorProtectedRoute />}>
+            <Route path="/instructor/my-tests" element={<InstructorTestList />} />
+            <Route path="/instructor/create-test" element={<CreateTest />} />
+            <Route path="/instructor/students" element={<InstructorStudentManagement />} />
+            <Route path="/instructor/test-stats/:testId" element={<TestAnalytics />} />
+            <Route path="/live/host/:testId" element={<LiveSessionHost />} />
+          </Route>
         </Route>
 
         {/* Specialized Routes without standard layout */}

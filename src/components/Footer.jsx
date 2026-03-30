@@ -1,47 +1,46 @@
 import React from "react";
-import { FaTwitter, FaLinkedin, FaGithub, FaInstagram, FaHeart } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { FaHeart, FaShieldAlt, FaLock } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-blue-700 text-white py-6 border-t border-blue-400 mt-auto">
-      <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
-        {/* 🌍 Left Section - Copyright */}
-        <p className="text-sm md:text-base">&copy; 2024 NextGen Learning. All Rights Reserved.</p>
+    <footer className="bg-blue-700 text-white border-t border-blue-600 mt-auto">
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
 
-        {/* 🔗 Middle Section - Social Media Links */}
-        <div className="flex space-x-5 my-3 md:my-0">
-          {/* <SocialLink href="#" icon={<FaTwitter />} />
-          <SocialLink href="#" icon={<FaLinkedin />} />
-          <SocialLink href="#" icon={<FaGithub />} />
-          <SocialLink href="#" icon={<FaInstagram />} /> */}
+          {/* Left – Brand */}
+          <div className="text-center md:text-left">
+            <p className="font-black text-base tracking-tight">IgniteVerse</p>
+            <p className="text-xs text-blue-200 mt-0.5">&copy; 2026 Team Ignite. All Rights Reserved.</p>
+            <div className="flex gap-4 mt-2.5 justify-center md:justify-start">
+              <Link to="/page/terms-portal" className="text-xs text-blue-200 hover:text-white underline underline-offset-2 decoration-blue-400 transition-colors">Terms & Conditions</Link>
+              <Link to="/page/terms-portal" className="text-xs text-blue-200 hover:text-white underline underline-offset-2 decoration-blue-400 transition-colors">Privacy Policy</Link>
+              <Link to="/pricing" className="text-xs text-blue-200 hover:text-white underline underline-offset-2 decoration-blue-400 transition-colors">Pricing</Link>
+            </div>
+          </div>
+
+          {/* Right – Credit */}
+          <div className="flex items-center gap-2 text-sm text-blue-100">
+            <div className="flex items-center gap-2 opacity-60">
+              <FaShieldAlt className="text-[10px]" />
+              <FaLock className="text-[10px]" />
+            </div>
+            <span>Built by</span>
+            <a
+              href="https://teamignite.in"
+              className="text-white font-bold hover:text-blue-200 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Team Ignite
+            </a>
+            <span>with</span>
+            <FaHeart className="text-red-400 text-xs animate-pulse" />
+          </div>
         </div>
-
-        {/* 💙 Right Section - Credits */}
-        <p className="text-sm md:text-base">
-          Built by{" "}
-          <a
-            href="https://teamignite.in"
-            className="text-blue-200 hover:text-white transition duration-300"
-          >
-            Team Ignite
-          </a>{" "}
-          with <FaHeart className="inline text-red-500 text-lg" />
-        </p>
       </div>
     </footer>
   );
 };
-
-// 🔗 Social Media Icon Component
-const SocialLink = ({ href, icon }) => (
-  <a
-    href={href}
-    className="text-white text-xl hover:text-blue-300 transition duration-300"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    {icon}
-  </a>
-);
 
 export default Footer;
