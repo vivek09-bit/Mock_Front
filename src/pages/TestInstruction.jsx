@@ -10,7 +10,9 @@ const TestInstruction = () => {
   const { apiBase } = useContext(ThemeContext);
 
   const [test, setTest] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [purchasing, setPurchasing] = useState(false);
 
   useEffect(() => {
     const fetchTestDetails = async () => {
@@ -19,8 +21,17 @@ const TestInstruction = () => {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         const response = await axios.get(`${apiBase}/api/test/${testId}`, { headers });
-
         setTest(response.data);
+
+        // Fetch latest user profile if logged in
+        if (token) {
+          try {
+            const userRes = await axios.get(`${apiBase}/api/auth/profile`, { headers });
+            setUserProfile(userRes.data.user);
+          } catch (e) {
+            console.error("Could not fetch user profile", e);
+          }
+        }
       } catch (error) {
         console.error("Error fetching test details:", error);
       } finally {
@@ -30,6 +41,54 @@ const TestInstruction = () => {
 
     fetchTestDetails();
   }, [testId, apiBase]);
+
+  const handlePurchase = async (purchaseType) => {
+    if (!userProfile) {
+        alert("Please log in to purchase tests.");
+        navigate('/login');
+        return;
+    }
+    setPurchasing(true);
+    try {
+        const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        const response = await axios.post(`${apiBase}/api/test/${testId}/purchase`, { purchaseType }, { headers });
+        alert("Purchase successful! You can now start the test.");
+        
+        // Refresh profile to get updated tokens and unlocks
+        const userRes = await axios.get(`${apiBase}/api/auth/profile`, { headers });
+        setUserProfile(userRes.data.user);
+    } catch (err) {
+        if (err.response?.status === 402) {
+            alert(`Insufficient tokens! You need ${err.response.data.required} but have ${err.response.data.balance}.`);
+            // You can redirect to pricing here if needed
+        } else {
+            alert("An error occurred during purchase.");
+        }
+        console.error("Purchase error", err);
+    } finally {
+        setPurchasing(false);
+    }
+  };
+
+  const isUnlocked = useMemo(() => {
+    if (!test || !userProfile) return test?.tokenCostAttempt === 0 && test?.tokenCostPermanent === 0 && test?.tokenCost === 0; // free tests are unlocked
+    
+    // Check if free
+    if (isDynamic) {
+        if (!test.tokenCost || test.tokenCost === 0) return true;
+    } else {
+        if (!test.tokenCostAttempt && !test.tokenCostPermanent) return true;
+    }
+
+    // Check if permanently unlocked
+    if (userProfile.unlockedTests?.includes(testId)) return true;
+
+    // Check if has available attempts
+    if (userProfile.availableAttempts && userProfile.availableAttempts[testId] > 0) return true;
+
+    return false;
+  }, [test, userProfile, isDynamic, testId]);
 
   // 🔥 Detect type
   const isDynamic = useMemo(() => !!test?.rules, [test]);
@@ -143,20 +202,52 @@ const TestInstruction = () => {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end gap-4 border-t pt-6 mt-8">
               <button
                 onClick={() => navigate('/dashboard')}
-                className="px-6 py-3 rounded-lg text-gray-600 hover:bg-gray-100"
+                className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors"
               >
                 Cancel
               </button>
 
-              <button
-                onClick={() => navigate(`/take-test/${testId}`)}
-                className="px-8 py-3 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700"
-              >
-                Start Test
-              </button>
+              {!isUnlocked ? (
+                  <div className="flex gap-3">
+                    {test.tokenCostAttempt > 0 && (
+                        <button
+                          disabled={purchasing}
+                          onClick={() => handlePurchase('attempt')}
+                          className="px-6 py-3 rounded-xl font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                        >
+                          Unlock Once (🪙 {test.tokenCostAttempt})
+                        </button>
+                    )}
+                    {test.tokenCostPermanent > 0 && (
+                        <button
+                          disabled={purchasing}
+                          onClick={() => handlePurchase('permanent')}
+                          className="px-6 py-3 rounded-xl font-bold text-white bg-indigo-600 shadow-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                        >
+                          Unlock Permanently (🪙 {test.tokenCostPermanent})
+                        </button>
+                    )}
+                    {isDynamic && test.tokenCost > 0 && (
+                         <button
+                         disabled={purchasing}
+                         onClick={() => handlePurchase('attempt')}
+                         className="px-6 py-3 rounded-xl font-bold text-white bg-purple-600 shadow-md hover:bg-purple-700 transition-colors disabled:opacity-50"
+                       >
+                         Generate Test (🪙 {test.tokenCost})
+                       </button>
+                    )}
+                  </div>
+              ) : (
+                <button
+                  onClick={() => navigate(`/take-test/${testId}`)}
+                  className="px-8 py-3 rounded-xl font-bold text-white bg-blue-600 shadow-md hover:bg-blue-700 transition-colors"
+                >
+                  Start Test
+                </button>
+              )}
             </div>
 
           </div>

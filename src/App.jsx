@@ -18,6 +18,7 @@ import Tping from './pages/Tping';
 import AboutUs from './components/About';
 import ContactForm from './pages/ContactForm';
 import FAQsPage from './pages/FAQsPage';
+import PolicyPage from './pages/PolicyPage';
 import InstructorLogin from "./pages/InstructorLogin";
 import InstructorRegister from "./pages/InstructorRegister";
 import InstructorDashboard from "./pages/InstructorDashboard";
@@ -72,6 +73,7 @@ const App = () => {
           <Route path="/faqspage" element={<FAQsPage />} />
           <Route path='/about' element={<AboutUs />} />
           <Route path='/contact' element={<ContactForm />} />
+          <Route path='/policy' element={<PolicyPage />} />
           <Route path='/page/terms-portal' element={<TermsAndConditions />} />
           <Route path="/test/instruction/:testId" element={<TestInstruction />} />
           <Route path="/start-test/:testId" element={<StudentLanding />} />

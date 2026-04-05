@@ -10,28 +10,31 @@ import {
 const studentPlans = [
   {
     name: "Starter Pack",
-    price: "₹199",
-    credits: "10 Credits",
+    price: "₹49",
+    credits: "50 Tokens",
+    tokenAmount: 50,
     description: "Perfect for a quick practice session before your exam.",
-    features: ["Unlock 10 Premium Tests", "Basic Performance Analytics", "7-Day Validity", "Standard Support"],
+    features: ["Unlock Paid Static Tests", "Generate Dynamic Tests", "No expiry"],
     icon: <FaBolt className="text-yellow-500" />,
     popular: false,
   },
   {
     name: "Pro Pack",
-    price: "₹499",
-    credits: "50 Credits",
+    price: "₹149",
+    credits: "200 Tokens",
+    tokenAmount: 200,
     description: "Most popular choice for dedicated aspirants.",
-    features: ["Unlock 50 Premium Tests", "Advanced AI Analytics", "Personalized Goal Tracking", "Priority Support", "30-Day Validity"],
+    features: ["Best value for money", "Unlock Paid Static Tests", "Generate Dynamic Tests", "Priority Support", "No expiry"],
     icon: <FaGem className="text-indigo-500" />,
     popular: true,
   },
   {
     name: "Elite Pack",
-    price: "₹899",
-    credits: "Unlimited*",
-    description: "Complete mastery with unlimited access to everything.",
-    features: ["Unlimited Test Unlocks", "AI Mentorship Insights", "Live Battle Pass", "All Future Updates", "90-Day Validity"],
+    price: "₹299",
+    credits: "500 Tokens",
+    tokenAmount: 500,
+    description: "Complete mastery with massive token reserves.",
+    features: ["Huge bulk discount", "Unlock Paid Static Tests", "Generate Dynamic Tests", "Priority Support", "No expiry"],
     icon: <FaRocket className="text-purple-500" />,
     popular: false,
   },
@@ -64,12 +67,49 @@ const faqs = [
   { q: "Can I get a refund?",               a: "Yes — 7-day full refund if you haven't unlocked any premium test. See our Refund Policy for details." },
 ];
 
+import React, { useState, useContext } from "react";
+import axios from "axios";
+import { ThemeContext } from "../context/ThemeContext";
+
 /* ── Component ───────────────────────────────────────────── */
 const Pricing = () => {
+  const { apiBase } = useContext(ThemeContext);
   const [view, setView] = useState("student");
+  const [loading, setLoading] = useState(false);
   const plans = view === "student" ? studentPlans : instructorPlans;
   const accentStudent = "text-indigo-600";
   const accentInstr   = "text-teal-600";
+
+  const handleBuy = async (plan) => {
+    if (plan.status === "Waitlist") return;
+
+    if (!plan.tokenAmount) {
+       alert("This plan does not support direct token purchase yet.");
+       return;
+    }
+
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        alert("Please login first to buy tokens.");
+        return;
+    }
+
+    setLoading(true);
+    // Mocking Razorpay Payment Intent
+    setTimeout(async () => {
+        try {
+            const headers = { Authorization: `Bearer ${token}` };
+            const response = await axios.post(`${apiBase}/api/payment/buy-tokens`, { tokenAmount: plan.tokenAmount }, { headers });
+            
+            alert(`Mock Payment Successful! You have been credited with ${plan.tokenAmount} tokens.`);
+        } catch (error) {
+            console.error(error);
+            alert("Error Mocking Payment");
+        } finally {
+            setLoading(false);
+        }
+    }, 1500); // simulate delay
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-x-hidden">
@@ -176,19 +216,20 @@ const Pricing = () => {
 
               {/* CTA */}
               <button
-                disabled={plan.status === "Waitlist"}
+                disabled={plan.status === "Waitlist" || loading}
+                onClick={() => handleBuy(plan)}
                 className={`w-full py-4 rounded-2xl font-black text-base transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 group ${
                   plan.popular
                     ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30"
-                    : plan.status === "Waitlist"
+                    : plan.status === "Waitlist" || loading
                     ? "bg-slate-100 text-slate-400 cursor-not-allowed"
                     : view === "student"
                     ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
                     : "bg-teal-50 text-teal-600 hover:bg-teal-100"
                 }`}
               >
-                {plan.status === "Waitlist" ? "Join Waitlist" : "Get Started"}
-                {plan.status !== "Waitlist" && <FaArrowRight className="group-hover:translate-x-1 transition-transform text-sm" />}
+                {loading ? "Processing..." : (plan.status === "Waitlist" ? "Join Waitlist" : "Get Started")}
+                {plan.status !== "Waitlist" && !loading && <FaArrowRight className="group-hover:translate-x-1 transition-transform text-sm" />}
               </button>
             </div>
           ))}

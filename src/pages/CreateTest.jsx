@@ -49,6 +49,8 @@ const CreateTest = () => {
     endTime: "",
     accessPasscode: "",
     requiredStudentDetails: [],
+    tokenCostAttempt: 0,
+    tokenCostPermanent: 0,
   });
 
   const [questions, setQuestions] = useState([{
@@ -339,6 +341,22 @@ const CreateTest = () => {
                         <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Passing Grade (%)</label>
                         <input
                           type="number" name="passingScore" value={testMetadata.passingScore}
+                          onChange={handleMetadataChange}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Cost Per Attempt (Tokens)</label>
+                        <input
+                          type="number" min="0" name="tokenCostAttempt" value={testMetadata.tokenCostAttempt}
+                          onChange={handleMetadataChange}
+                          className="w-full bg-slate-50 border border-slate-100 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Cost For Permanent Unlock (Tokens)</label>
+                        <input
+                          type="number" min="0" name="tokenCostPermanent" value={testMetadata.tokenCostPermanent}
                           onChange={handleMetadataChange}
                           className="w-full bg-slate-50 border border-slate-100 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                         />

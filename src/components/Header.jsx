@@ -1,16 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { ThemeContext } from "../context/ThemeContext";
 
 function Header() {
   const [isSliderOpen, setIsSliderOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const { apiBase } = useContext(ThemeContext);
   const token = localStorage.getItem("authToken");
-  let user = null;
-  try {
-    const userStr = localStorage.getItem("user");
-    user = userStr ? JSON.parse(userStr) : null;
-  } catch (e) {
-    console.error("Error parsing user in Header:", e);
-  }
+
+  useEffect(() => {
+    if (token) {
+      axios.get(`${apiBase}/api/auth/profile`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => {
+          setUserProfile(res.data.user);
+          localStorage.setItem("user", JSON.stringify(res.data.user)); // sync
+        })
+        .catch(err => console.error("Could not fetch user profile in Header", err));
+    }
+  }, [token, apiBase]);
 
   const navigate = useNavigate();
 
@@ -79,10 +87,16 @@ function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {token ? (
               <>
-                {user && user.username ? (
+                {userProfile && (
+                  <div className="flex items-center gap-2 bg-indigo-900/40 px-3 py-1.5 rounded-full border border-indigo-500/30">
+                     <span className="text-yellow-400 font-black">🪙</span>
+                     <span className="text-sm font-bold">{userProfile.tokens || 0} Tokens</span>
+                  </div>
+                )}
+                {userProfile && userProfile.username ? (
                   <Link
-                    to={`/profile/${user.username}`}
-                    className="bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100"
+                    to={`/profile/${userProfile.username}`}
+                    className="bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 font-bold"
                   >
                     Profile
                   </Link>
