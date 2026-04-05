@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaRedo, FaHome, FaCheckCircle, FaTimesCircle, FaChartPie, FaListAlt } from "react-icons/fa";
 import Confetti from "react-confetti";
+import StaticTestResult from "../components/tests/StaticTestResult";
+import DynamicTestResult from "../components/tests/DynamicTestResult";
 
 const TestResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { result, attempted } = location.state || {};
+  const { result, attempted, totalQuestions: totalQuestionsState, testModel, testId } = location.state || {};
   const [showConfetti, setShowConfetti] = useState(false);
 
   // Theme Colors
@@ -38,7 +40,7 @@ const TestResult = () => {
   }
 
   // Calculate stats
-  const totalQuestions = result.totalQuestions || 0;
+  const totalQuestionsCount = totalQuestionsState || result.totalQuestions || 0;
   const correct = result.correctAnswers || 0;
   // Use passed attempted count, or fallback to result.attempted, or infer from correct if missing (fallback)
   const attemptedCount = attempted !== undefined ? attempted : (result.attempted || 0);
@@ -47,10 +49,18 @@ const TestResult = () => {
   const wrong = Math.max(0, attemptedCount - correct);
 
   // Skipped is Total minus Attempted
-  const skipped = Math.max(0, totalQuestions - attemptedCount);
+  const skipped = Math.max(0, totalQuestionsCount - attemptedCount);
 
   const accuracy = attemptedCount > 0 ? Math.round((correct / attemptedCount) * 100) : 0;
   const isPassed = result.passed;
+
+  // Render specialized views for static/dynamic models
+  if (testModel === "static") {
+    return <StaticTestResult testResult={{...result, attempted, totalQuestions: totalQuestionsCount}} navigate={navigate} testId={testId} />;
+  }
+  if (testModel === "dynamic") {
+    return <DynamicTestResult testResult={{...result, attempted, totalQuestions: totalQuestionsCount}} navigate={navigate} testId={testId} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4 font-sans">
@@ -123,7 +133,7 @@ const TestResult = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-1">{totalQuestions}</div>
+                <div className="text-3xl font-bold text-blue-600 mb-1">{totalQuestionsCount}</div>
                 <div className="text-xs text-blue-400 font-bold uppercase">Total Qs</div>
               </div>
               <div className="p-4 rounded-xl bg-green-50 border border-green-100 text-center">
@@ -155,30 +165,30 @@ const TestResult = () => {
               <div>
                 <div className="flex justify-between text-sm mb-1 text-gray-600">
                   <span>Correct Answers</span>
-                  <span className="font-bold">{Math.round((correct / totalQuestions) * 100)}%</span>
+                  <span className="font-bold">{Math.round((correct / totalQuestionsCount) * 100)}%</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                  <div className="bg-green-500 h-3 rounded-full" style={{ width: `${(correct / totalQuestions) * 100}%` }}></div>
+                  <div className="bg-green-500 h-3 rounded-full" style={{ width: `${(correct / totalQuestionsCount) * 100}%` }}></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-sm mb-1 text-gray-600">
                   <span>Incorrect Answers</span>
-                  <span className="font-bold">{Math.round((wrong / totalQuestions) * 100)}%</span>
+                  <span className="font-bold">{Math.round((wrong / totalQuestionsCount) * 100)}%</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                  <div className="bg-red-500 h-3 rounded-full" style={{ width: `${(wrong / totalQuestions) * 100}%` }}></div>
+                  <div className="bg-red-500 h-3 rounded-full" style={{ width: `${(wrong / totalQuestionsCount) * 100}%` }}></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-sm mb-1 text-gray-600">
                   <span>Skipped</span>
-                  <span className="font-bold">{Math.round((skipped / totalQuestions) * 100)}%</span>
+                  <span className="font-bold">{Math.round((skipped / totalQuestionsCount) * 100)}%</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                  <div className="bg-gray-400 h-3 rounded-full" style={{ width: `${(skipped / totalQuestions) * 100}%` }}></div>
+                  <div className="bg-gray-400 h-3 rounded-full" style={{ width: `${(skipped / totalQuestionsCount) * 100}%` }}></div>
                 </div>
               </div>
             </div>

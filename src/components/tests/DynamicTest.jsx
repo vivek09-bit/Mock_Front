@@ -119,7 +119,7 @@ const DynamicTest = (props) => {
             <span className="bg-red-100 text-red-800 px-1.5 rounded text-xs font-bold">-{currentQuestion?.negativeMarks || 0}</span>
           </div>
         </div>
-        <div 
+        <div
           className={`${isMobile ? 'text-base' : 'text-lg'} text-gray-800 font-medium mb-6 leading-relaxed question-content`}
           dangerouslySetInnerHTML={{ __html: currentQuestion?.question?.text || currentQuestion?.questionText || "" }}
         />
@@ -135,7 +135,7 @@ const DynamicTest = (props) => {
             return (
               <label key={idx} className={`flex items-center gap-2 cursor-pointer p-3 rounded border border-gray-200 bg-white transition-all duration-200 ${isSelected ? 'bg-gray-50 border-gray-500' : ''}`}>
                 <input type="radio" name="opt" className="accent-gray-500 w-4 h-4" checked={isSelected} onChange={() => handleAnswerChange(value)} />
-                <span 
+                <span
                   className="text-sm text-gray-800 flex-1 option-content"
                   dangerouslySetInnerHTML={{ __html: label }}
                 />

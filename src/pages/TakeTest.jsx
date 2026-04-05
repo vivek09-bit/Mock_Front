@@ -7,6 +7,10 @@ import { ThemeContext } from "../context/ThemeContext";
 import FullMockTest from "../components/tests/FullMockTest";
 import PremockTest from "../components/tests/PremockTest";
 import LiveTest from "../components/tests/LiveTest";
+import StaticTest from "../components/tests/StaticTest";
+import DynamicTest from "../components/tests/DynamicTest";
+import InstructorPremockTest from "../components/tests/InstructorPremockTest";
+import InstructorFullMockTest from "../components/tests/InstructorFullMockTest";
 import DeprecatedTest from "../components/tests/DeprecatedTest";
 
 // Question Status Constants
@@ -97,11 +101,11 @@ const TakeTest = () => {
         // Enforce student details if required by educator
         const requiredFields = questionsData.requiredStudentDetails || [];
         if (requiredFields.length > 0) {
-            const savedInfo = localStorage.getItem(`student_info_${testId}`);
-            if (!savedInfo) {
-                navigate(`/start-test/${testId}`);
-                return;
-            }
+          const savedInfo = localStorage.getItem(`student_info_${testId}`);
+          if (!savedInfo) {
+            navigate(`/start-test/${testId}`);
+            return;
+          }
         }
 
         const totalRemaining = (questionsData.duration || 60) * 60;
@@ -234,24 +238,33 @@ const TakeTest = () => {
   const handleSubmit = async () => {
     // If not logged in, we check if studentDetails exist in localStorage
     const savedStudentInfo = JSON.parse(localStorage.getItem(`student_info_${testId}`) || "null");
-    
+
     if (!user && !savedStudentInfo) {
-        return setError("Please fill in your details first.");
+      return setError("Please fill in your details first.");
     }
 
     try {
       const response = await axios.post(`${apiBase}/api/test/submit`, {
-        testId, 
+        testId,
         userId: user?.user?._id || null, // Allow null for guests
         answers,
         studentDetails: savedStudentInfo // Send the collected metadata
       }, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-      
+
       exitFullScreen();
       // Clean up metadata after successful submission
       localStorage.removeItem(`student_info_${testId}`);
-      
-      navigate("/submission-success");
+
+      // Redirect all tests to /test-result with consistency
+      navigate("/test-result", { 
+        state: { 
+          result: response.data, 
+          testModel: test.testModel, 
+          testId,
+          attempted: Object.keys(answers).length,
+          totalQuestions: test.questions.length
+        } 
+      });
     } catch {
       setError("Submission failed. Try again.");
     }
@@ -328,16 +341,23 @@ const TakeTest = () => {
     handleResumeTest, showSubmitModal
   };
 
+  const isInstructor = user?.role === 'ins' || JSON.parse(localStorage.getItem('user'))?.role === 'ins';
+
   let testView;
   switch (test.testModel) {
-    case "fullmock": testView = <FullMockTest {...commonProps} />; break;
-    case "premock": testView = <PremockTest {...commonProps} />; break;
+    case "fullmock": 
+      testView = isInstructor ? <InstructorFullMockTest {...commonProps} /> : <FullMockTest {...commonProps} />; 
+      break;
+    case "premock": 
+      testView = isInstructor ? <InstructorPremockTest {...commonProps} /> : <PremockTest {...commonProps} />; 
+      break;
     case "live": testView = <LiveTest {...commonProps} />; break;
-    case "static": testView = <PremockTest {...commonProps} />; break; // Fallback for old tests
-    case "dynamic": testView = <LiveTest {...commonProps} />; break; // Fallback for old tests
-    default: testView = <PremockTest {...commonProps} />;
+    case "static": testView = <StaticTest {...commonProps} />; break;
+    case "dynamic": testView = <DynamicTest {...commonProps} />; break;
+    default: 
+      testView = isInstructor ? <InstructorPremockTest {...commonProps} /> : <PremockTest {...commonProps} />;
   }
-  
+
   // Legacy support for older schema
   if (!test.testModel && test.testMode === "LEGACY") {
     testView = <DeprecatedTest {...commonProps} />;

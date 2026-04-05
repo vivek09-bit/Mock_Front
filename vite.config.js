@@ -11,7 +11,7 @@ export default defineConfig({
     historyApiFallback: true,
     host: true, // Listen on all local IPs (0.0.0.0)
     hmr: {
-      host: '192.168.0.198', // Explicitly use your laptop's network IP
+      host: '192.168.31.205', // Explicitly use your laptop's network IP
     },
     // Enables proper routing
   },

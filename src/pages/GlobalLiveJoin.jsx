@@ -1,21 +1,29 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 import { ThemeContext } from "../context/ThemeContext";
-import { FaBolt, FaUser, FaLock, FaGamepad, FaPlay } from "react-icons/fa";
+import { FaBolt, FaUser, FaLock, FaGamepad, FaPlay, FaChevronLeft, FaSpinner } from "react-icons/fa";
 import LiveTest from "../components/tests/LiveTest";
-
-let socket;
 
 const GlobalLiveJoin = () => {
     const navigate = useNavigate();
     const { apiBase } = useContext(ThemeContext);
     
+    // ── Core State ──────────────────────────────────────────────────────────
+    const socketRef = useRef(null);
+
+    const [joinStage, setJoinStage] = useState("pin"); // 'pin' → 'details'
     const [passcode, setPasscode] = useState("");
     const [name, setName] = useState("");
+    const [studentDetails, setStudentDetails] = useState({});
+
     const [status, setStatus] = useState("entering"); // entering, waiting, playing
     const [error, setError] = useState("");
     const [testId, setTestId] = useState(null);
+    const [testInfo, setTestInfo] = useState(null);
+    const [isVerifying, setIsVerifying] = useState(false);
+    
+    const requiredFields = testInfo?.requiredStudentDetails || [];
     
     // Game State
     const [gameState, setGameState] = useState({
@@ -24,7 +32,21 @@ const GlobalLiveJoin = () => {
     });
 
     useEffect(() => {
-        socket = io(apiBase.replace('/api', ''));
+        const socket = io(apiBase.replace('/api', ''), { transports: ["websocket", "polling"] });
+        socketRef.current = socket;
+
+        socket.on('passcode-verified', ({ testId, testName, requiredFields }) => {
+            setTestId(testId);
+            setTestInfo({ name: testName, requiredStudentDetails: requiredFields });
+            setIsVerifying(false);
+
+            if (requiredFields && requiredFields.length > 0) {
+                setStudentDetails(prev => ({ ...prev, Name: name }));
+                setJoinStage("details");
+            } else {
+                emitJoin(testId, name, passcode);
+            }
+        });
 
         socket.on('joined-success', ({ testId }) => {
             setTestId(testId);
@@ -57,15 +79,45 @@ const GlobalLiveJoin = () => {
 
         socket.on('error', ({ message }) => {
             setError(message);
+            setIsVerifying(false);
         });
 
-        return () => socket.disconnect();
-    }, [apiBase]);
+        return () => {
+            if (socketRef.current) socketRef.current.disconnect();
+        };
+    }, [apiBase, name, passcode]);
 
-    const handleJoin = (e) => {
+    const emitJoin = (tid, sName, sPasscode) => {
+        const finalName = studentDetails["Name"] || studentDetails["Full Name"] || sName || "Guest";
+        const merged = { ...studentDetails, Name: finalName };
+        if (socketRef.current) {
+            socketRef.current.emit('student-join-session', { 
+                testId: tid, 
+                passcode: sPasscode.trim().toUpperCase(), 
+                studentName: finalName,
+                studentDetails: merged
+            });
+        }
+    };
+
+    const handlePinSubmit = (e) => {
         e.preventDefault();
-        if (!name || !passcode) return setError("Enter credentials.");
-        socket.emit('student-join-session', { passcode: passcode.toUpperCase(), studentName: name });
+        setError("");
+        if (!name.trim() || !passcode.trim()) return setError("Enter Name and Game PIN.");
+        
+        setIsVerifying(true);
+        if (socketRef.current) {
+            socketRef.current.emit("verify-passcode", { passcode: passcode.trim().toUpperCase() });
+        }
+    };
+
+    const handleDetailsSubmit = (e) => {
+        e.preventDefault();
+        setError("");
+        for (const field of requiredFields) {
+            if (!studentDetails[field]?.trim()) return setError(`Required: ${field}`);
+        }
+        emitJoin(testId, name, passcode);
     };
 
     const handleAnswer = (answer) => {
@@ -73,7 +125,9 @@ const GlobalLiveJoin = () => {
         const currentQuestion = gameState.test?.questions[gameState.currentQuestionIndex];
         const isCorrect = currentQuestion?.correctAnswer?.includes(answer);
         console.log(`[SUBMIT_ANSWER] TestID: ${testId}, Answer: ${answer}`);
-        socket.emit('student-submit-answer', { testId, answer, isCorrect });
+        if (socketRef.current) {
+            socketRef.current.emit('student-submit-answer', { testId, answer, isCorrect });
+        }
     };
 
     if (status === "entering") {
@@ -89,42 +143,80 @@ const GlobalLiveJoin = () => {
                     </div>
 
                     <div className="bg-white/5 backdrop-blur-3xl p-1 w-full rounded-[3.5rem] border border-white/10 shadow-2xl shadow-black">
-                        <form onSubmit={handleJoin} className="p-8 space-y-4">
-                            <div className="relative group">
-                                <FaUser className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
-                                <input 
-                                    type="text"
-                                    placeholder="NICKNAME"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    className="w-full bg-slate-900/50 border-2 border-slate-800 rounded-[2rem] p-5 pl-14 text-white placeholder-slate-600 focus:border-amber-500 outline-none transition-all font-black text-lg uppercase"
-                                />
-                            </div>
-                            <div className="relative group">
-                                <FaLock className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
-                                <input 
-                                    type="text"
-                                    placeholder="GAME PIN"
-                                    maxLength={4}
-                                    value={passcode}
-                                    onChange={(e) => setPasscode(e.target.value)}
-                                    className="w-full bg-slate-900/50 border-2 border-slate-800 rounded-[2rem] p-5 pl-14 text-white placeholder-slate-600 focus:border-amber-500 outline-none transition-all font-black text-2xl tracking-[0.5em] uppercase text-center"
-                                />
-                            </div>
-
-                            {error && (
-                                <div className="px-6 py-3 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-xs font-bold text-center animate-shake">
-                                    {error}
+                        {joinStage === "pin" ? (
+                            <form onSubmit={handlePinSubmit} className="p-8 space-y-4 flex flex-col">
+                                <div className="relative group">
+                                    <FaUser className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
+                                    <input 
+                                        type="text"
+                                        placeholder="NICKNAME"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        className="w-full bg-slate-900/50 border-2 border-slate-800 rounded-[2rem] p-5 pl-14 text-white placeholder-slate-600 focus:border-amber-500 outline-none transition-all font-black text-lg uppercase"
+                                    />
                                 </div>
-                            )}
+                                <div className="relative group">
+                                    <FaLock className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
+                                    <input 
+                                        type="text"
+                                        placeholder="GAME PIN"
+                                        maxLength={4}
+                                        value={passcode}
+                                        onChange={(e) => setPasscode(e.target.value)}
+                                        className="w-full bg-slate-900/50 border-2 border-slate-800 rounded-[2rem] p-5 pl-14 text-white placeholder-slate-600 focus:border-amber-500 outline-none transition-all font-black text-2xl tracking-[0.5em] uppercase text-center"
+                                    />
+                                </div>
 
-                            <button 
-                                type="submit"
-                                className="w-full bg-amber-500 text-slate-950 py-5 rounded-[2rem] font-black text-2xl hover:bg-amber-400 transition-all shadow-xl shadow-amber-900/20 flex items-center justify-center gap-3 transform active:scale-95 mt-4"
-                            >
-                                <FaPlay className="text-sm" /> READY!
-                            </button>
-                        </form>
+                                {error && (
+                                    <div className="px-6 py-3 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-xs font-bold text-center animate-shake mt-2">
+                                        {error}
+                                    </div>
+                                )}
+
+                                <button 
+                                    type="submit"
+                                    disabled={isVerifying}
+                                    className="w-full bg-amber-500 text-slate-950 py-5 rounded-[2rem] font-black text-2xl hover:bg-amber-400 disabled:bg-amber-500/50 transition-all shadow-xl shadow-amber-900/20 flex items-center justify-center gap-3 transform active:scale-95 mt-4"
+                                >
+                                    {isVerifying ? <FaSpinner className="animate-spin text-sm" /> : <FaPlay className="text-sm" />} 
+                                    {isVerifying ? "CONNECTING..." : "READY!"}
+                                </button>
+                            </form>
+                        ) : (
+                            <form onSubmit={handleDetailsSubmit} className="p-8 space-y-4">
+                                <button type="button" onClick={() => setJoinStage("pin")} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest mb-4">
+                                    <FaChevronLeft /> Back
+                                </button>
+                                
+                                <p className="text-white font-black text-xl mb-6">REQUIRED INFO</p>
+                                
+                                {requiredFields.map(field => (
+                                    <div key={field} className="relative">
+                                        <input
+                                            type="text"
+                                            placeholder={field.toUpperCase()}
+                                            value={studentDetails[field] || ""}
+                                            onChange={e => setStudentDetails({ ...studentDetails, [field]: e.target.value })}
+                                            disabled={field.toLowerCase() === "name" || field.toLowerCase() === "full name"}
+                                            className="w-full bg-slate-900/50 border-2 border-slate-800 rounded-[1.5rem] p-4 text-white placeholder-slate-600 focus:border-amber-500 outline-none transition-all font-bold disabled:opacity-50"
+                                        />
+                                    </div>
+                                ))}
+
+                                {error && (
+                                    <div className="px-6 py-3 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500 text-xs font-bold text-center animate-shake mt-2">
+                                        {error}
+                                    </div>
+                                )}
+
+                                <button 
+                                    type="submit"
+                                    className="w-full bg-indigo-500 text-white py-5 rounded-[2rem] font-black text-2xl hover:bg-indigo-400 transition-all shadow-xl shadow-indigo-500/20 flex items-center justify-center gap-3 transform active:scale-95 mt-4"
+                                >
+                                    <FaBolt className="text-sm" /> ENTER ARENA
+                                </button>
+                            </form>
+                        )}
                     </div>
                 </div>
 

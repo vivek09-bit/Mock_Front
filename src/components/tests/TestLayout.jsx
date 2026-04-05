@@ -1,4 +1,5 @@
 import React from "react";
+import { FaClock, FaExclamationCircle } from "react-icons/fa";
 
 const TestLayout = ({
   test,
@@ -22,22 +23,78 @@ const TestLayout = ({
   proctoringSidebar,
   children
 }) => {
+  // Determine timer color and styling based on time remaining
+  const getTimerStyles = () => {
+    const isLowTime = timeLeft < 600; // Less than 10 minutes
+    const isCritical = timeLeft < 300; // Less than 5 minutes
+    const isVeryLow = timeLeft < 60; // Less than 1 minute
+
+    let bgColor = "bg-gray-800";
+    let textColor = "text-white";
+    let borderClass = "";
+    let pulseClass = "";
+    let shadowClass = "shadow-sm";
+
+    if (isVeryLow) {
+      bgColor = "bg-red-600";
+      borderClass = "border-2 border-red-800";
+      pulseClass = "animate-pulse";
+      shadowClass = "shadow-lg shadow-red-600/50";
+    } else if (isCritical) {
+      bgColor = "bg-red-500";
+      borderClass = "border-2 border-red-700";
+      shadowClass = "shadow-lg shadow-red-500/50";
+    } else if (isLowTime) {
+      bgColor = "bg-orange-500";
+      borderClass = "border-2 border-orange-600";
+      shadowClass = "shadow-lg shadow-orange-500/50";
+    }
+
+    return { bgColor, textColor, borderClass, pulseClass, shadowClass };
+  };
+
+  const timerStyles = getTimerStyles();
+  const isLowTime = timeLeft < 600;
+  const isCritical = timeLeft < 300;
+  const isVeryLow = timeLeft < 60;
+
   return (
     <div className="h-screen bg-gray-50 font-sans flex flex-col overflow-hidden">
       {/* HEADER */}
       <div className="h-16 bg-white border-b border-gray-200 flex justify-between items-center px-4 z-50">
         <div className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-blue-700 tracking-tight`}>Ignite Verse</div>
         {!isMobile && <div className="font-medium text-sm text-gray-800">{test.name}</div>}
-        <div className="flex items-center gap-4">
-          <span className="text-xs font-bold text-gray-600">{isMobile ? '' : 'Time Left'}</span>
-          <div className="bg-gray-800 text-white py-1 px-2 rounded text-sm font-bold tracking-wider">{formatTime(timeLeft)}</div>
+
+        {/* TIMER SECTION - Enhanced Display */}
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-2">
+              <FaClock className={`text-lg ${isLowTime ? (isCritical ? 'text-red-600 animate-spin' : 'text-orange-500') : 'text-blue-700'}`} />
+              <span className={`text-xs font-bold uppercase tracking-widest ${isLowTime ? (isCritical ? 'text-red-600' : 'text-orange-500') : 'text-gray-600'}`}>
+                {isVeryLow ? '⚠️ CRITICAL' : isLowTime ? '⚠️ Time Low' : 'Time Left'}
+              </span>
+            </div>
+
+            {/* MAIN TIMER DISPLAY */}
+            <div className={`${timerStyles.bgColor} ${timerStyles.textColor} ${timerStyles.borderClass} ${timerStyles.pulseClass} ${timerStyles.shadowClass} py-2 px-4 rounded-lg text-lg font-black tracking-wider transition-all duration-300 min-w-[140px] text-center`}>
+              {formatTime(timeLeft)}
+            </div>
+          </div>
+
+          {/* CRITICAL TIME WARNING BADGE */}
+          {isCritical && (
+            <div className="flex flex-col items-center justify-center animate-pulse">
+              <FaExclamationCircle className="text-2xl text-red-600" />
+              <span className="text-[10px] font-black text-red-600 mt-0.5">URGENT</span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* SECTION BAR */}
       <div className="h-10 bg-white border-b border-gray-200 flex items-center px-4 justify-between">
         <div className="bg-blue-700 text-white px-5 h-10 flex items-center text-sm font-bold rounded-tl rounded-tr">
-            {currentQuestion?.subject || "Quantitative Aptitude"}
+          {currentQuestion?.subject || "Quantitative Aptitude"}
         </div>
         <button className={`${isMobile ? 'flex' : 'hidden'} items-center gap-1.5 py-1 px-2 border border-blue-700 rounded text-blue-700 font-bold text-xs bg-transparent`} onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           {isSidebarOpen ? 'Close Panel' : 'Question Panel'}

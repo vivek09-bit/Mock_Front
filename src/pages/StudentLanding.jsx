@@ -115,8 +115,13 @@ const StudentLanding = () => {
         <div className="min-h-screen bg-[#0f172a] font-sans selection:bg-indigo-500 selection:text-white p-4 py-12 md:py-20">
             <div className="max-w-2xl mx-auto space-y-8 animate-fadeIn">
                 <header className="text-center space-y-4">
-                    <div className="inline-block px-3 py-1 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold uppercase tracking-widest rounded-full border border-indigo-500/20">
-                        Official Assessment
+                    <div className="flex items-center justify-center gap-3 flex-wrap">
+                        <div className="inline-block px-3 py-1 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold uppercase tracking-widest rounded-full border border-indigo-500/20">
+                            Official Assessment
+                        </div>
+                        <div className="inline-block px-3 py-1 bg-teal-500/10 text-teal-400 text-[10px] font-bold uppercase tracking-widest rounded-full border border-teal-500/20">
+                            ✓ Guest Access · No Login Required
+                        </div>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">{test.name}</h1>
                     <p className="text-slate-400 font-medium">Domain: {test.category} • {test.duration} Minutes</p>
