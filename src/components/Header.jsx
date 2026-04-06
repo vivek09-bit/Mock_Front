@@ -214,9 +214,9 @@ function Header() {
           <div className="border-t border-blue-600 pt-4 mt-4">
             {token ? (
               <>
-                {user && user.username ? (
+                {userProfile && userProfile.username ? (
                   <Link
-                    to={`/profile/${user.username}`}
+                    to={`/profile/${userProfile.username}`}
                     className="block bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-center mb-3"
                     onClick={closeSlider}
                   >

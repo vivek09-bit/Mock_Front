@@ -144,16 +144,32 @@ const LiveSessionJoin = () => {
 
     // ── Emit join to socket ─────────────────────────────────────────────────
     const emitJoin = () => {
-        const finalName = studentDetails["Name"] || studentDetails["Full Name"] || name || "Guest";
-        const merged = { ...studentDetails, Name: finalName };
+        // Security: Final validation before emit
+        const sanitizedName = (studentDetails["Name"] || name || "Guest").trim().substring(0, 50);
+        const sanitizedPasscode = passcode.trim().toUpperCase();
 
-        if (!socketRef.current) return setError("Connection error. Please refresh.");
+        if (!socketRef.current) {
+            setError("⚠️ Connection error. Please refresh the page.");
+            return;
+        }
+
+        if (!socketRef.current.connected) {
+            setError("⚠️ Not connected to server. Please refresh and try again.");
+            return;
+        }
+
+        const sanitizedDetails = {};
+        for (const [key, value] of Object.entries(studentDetails)) {
+            if (typeof value === 'string') {
+                sanitizedDetails[key] = value.trim().substring(0, 100);
+            }
+        }
 
         socketRef.current.emit("student-join-session", {
             testId: activeTestIdRef.current,
-            passcode: passcode.trim().toUpperCase(),
-            studentName: finalName,
-            studentDetails: merged,
+            passcode: sanitizedPasscode,
+            studentName: sanitizedName,
+            studentDetails: { ...sanitizedDetails, Name: sanitizedName },
         });
     };
 
@@ -161,14 +177,43 @@ const LiveSessionJoin = () => {
     const handlePinSubmit = (e) => {
         e.preventDefault();
         setError("");
-        if (!name.trim()) return setError("Please enter your display name.");
-        if (!passcode.trim()) return setError("Please enter the Game PIN.");
+
+        // Security: Input validation
+        const trimmedName = name.trim();
+        const trimmedPasscode = passcode.trim().toUpperCase();
+
+        // Validate name: alphanumeric + spaces only, length 2-50
+        if (!trimmedName) {
+            return setError("Please enter your display name.");
+        }
+        if (trimmedName.length < 2) {
+            return setError("Name must be at least 2 characters long.");
+        }
+        if (trimmedName.length > 50) {
+            return setError("Name must be less than 50 characters.");
+        }
+        if (!/^[a-zA-Z0-9\s\-']*$/.test(trimmedName)) {
+            return setError("Name can only contain letters, numbers, spaces, hyphens, and apostrophes.");
+        }
+
+        // Validate passcode: alphanumeric only, length 4-6
+        if (!trimmedPasscode) {
+            return setError("Please enter the Game PIN.");
+        }
+        if (trimmedPasscode.length < 4 || trimmedPasscode.length > 6) {
+            return setError("Game PIN must be 4-6 characters.");
+        }
+        if (!/^[A-Z0-9]*$/.test(trimmedPasscode)) {
+            return setError("Game PIN can only contain letters and numbers.");
+        }
 
         // If joined globally (no urlTestId), we verify passcode first
         if (!urlTestId) {
             setError("");
             setTestFetched(false); // trigger loading state
-            if (socketRef.current) socketRef.current.emit("verify-passcode", { passcode: passcode.trim().toUpperCase() });
+            if (socketRef.current) {
+                socketRef.current.emit("verify-passcode", { passcode: trimmedPasscode });
+            }
             return;
         }
 
@@ -179,7 +224,7 @@ const LiveSessionJoin = () => {
         }
 
         if (requiredFields.length > 0) {
-            setStudentDetails(prev => ({ ...prev, Name: name }));
+            setStudentDetails(prev => ({ ...prev, Name: trimmedName }));
             setJoinStage("details");
         } else {
             emitJoin();
@@ -190,9 +235,18 @@ const LiveSessionJoin = () => {
     const handleDetailsSubmit = (e) => {
         e.preventDefault();
         setError("");
+
+        // Security: Validate all required fields have content
         for (const field of requiredFields) {
-            if (!studentDetails[field]?.trim()) return setError(`Please fill in: ${field}`);
+            const value = studentDetails[field]?.trim();
+            if (!value || value.length < 2) {
+                return setError(`Please fill in a valid ${field} (at least 2 characters).`);
+            }
+            if (value.length > 100) {
+                return setError(`${field} is too long (max 100 characters).`);
+            }
         }
+
         emitJoin();
     };
 

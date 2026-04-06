@@ -71,6 +71,9 @@ const TestInstruction = () => {
     }
   };
 
+  // 🔥 Detect type
+  const isDynamic = useMemo(() => !!test?.rules, [test]);
+
   const isUnlocked = useMemo(() => {
     if (!test || !userProfile) return test?.tokenCostAttempt === 0 && test?.tokenCostPermanent === 0 && test?.tokenCost === 0; // free tests are unlocked
     
@@ -89,9 +92,6 @@ const TestInstruction = () => {
 
     return false;
   }, [test, userProfile, isDynamic, testId]);
-
-  // 🔥 Detect type
-  const isDynamic = useMemo(() => !!test?.rules, [test]);
 
   // 🔥 Calculate totals
   const totalQuestions = useMemo(() => {

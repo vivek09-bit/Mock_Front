@@ -34,6 +34,7 @@ const TakeTest = () => {
   const [user, setUser] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [testStartTime, setTestStartTime] = useState(null);
 
   const [showGuidelines, setShowGuidelines] = useState(true);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
@@ -46,14 +47,41 @@ const TakeTest = () => {
 
   const { apiBase } = useContext(ThemeContext);
 
+  // Enhanced Security: Prevent malicious behaviors
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
       if (window.innerWidth >= 768) setIsSidebarOpen(false);
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+
+    // Security: Prevent screenshot tools
+    const preventScreenshots = (e) => {
+      if (e.keyCode === 44) {
+        e.preventDefault();
+        setWarningMessage("⚠️ Screenshots are not allowed during the test.");
+      }
+    };
+
+    // Security: Disable drag-drop of content
+    const disableDragDrop = (e) => {
+      if (!showGuidelines && e.target.closest('[data-allow-drag]') === null) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('keydown', preventScreenshots);
+    document.addEventListener('dragstart', disableDragDrop);
+    document.addEventListener('drop', disableDragDrop);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('keydown', preventScreenshots);
+      document.removeEventListener('dragstart', disableDragDrop);
+      document.removeEventListener('drop', disableDragDrop);
+    };
+  }, [showGuidelines]);
 
   useEffect(() => {
     const fetchTestAndUser = async () => {
@@ -156,6 +184,9 @@ const TakeTest = () => {
   };
 
   const startTest = () => {
+    if (testStartTime === null) {
+      setTestStartTime(Date.now());
+    }
     enterFullScreen();
     setShowGuidelines(false);
   };
@@ -236,37 +267,83 @@ const TakeTest = () => {
   };
 
   const handleSubmit = async () => {
+    // Security: Prevent re-submission spam
+    if (loading) return;
+
     // If not logged in, we check if studentDetails exist in localStorage
     const savedStudentInfo = JSON.parse(localStorage.getItem(`student_info_${testId}`) || "null");
 
     if (!user && !savedStudentInfo) {
-      return setError("Please fill in your details first.");
+      setWarningMessage("⚠️ Security: Student details are required. Please fill in your information.");
+      return;
+    }
+
+    // Security: Validate answers data
+    if (!answers || typeof answers !== 'object') {
+      setWarningMessage("⚠️ Invalid submission data detected. Please refresh and try again.");
+      return;
+    }
+
+    // Security: Prevent submission of tampered data by validating answer keys
+    const validAnswerKeys = new Set(test.questions.map(q => q._id));
+    const allAnswersValid = Object.keys(answers).every(key => validAnswerKeys.has(key));
+
+    if (!allAnswersValid) {
+      setWarningMessage("⚠️ Security: Invalid answer data detected. Submission blocked.");
+      return;
     }
 
     try {
-      const response = await axios.post(`${apiBase}/api/test/submit`, {
+      setLoading(true);
+
+      const submissionPayload = {
         testId,
-        userId: user?.user?._id || null, // Allow null for guests
+        userId: user?.user?._id || null,
         answers,
-        studentDetails: savedStudentInfo // Send the collected metadata
-      }, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        studentDetails: savedStudentInfo,
+        testStartTime: new Date(testStartTime).toISOString(), // Include for audit trail
+        submittedAt: new Date().toISOString(),
+        submissionDuration: Math.floor((Date.now() - testStartTime) / 1000), // Duration in seconds
+        userAgent: navigator.userAgent, // For device fingerprinting
+        timeOnPage: Math.floor((Date.now() - testStartTime) / 1000)
+      };
+
+      const response = await axios.post(
+        `${apiBase}/api/test/submit`,
+        submissionPayload,
+        {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          timeout: 30000
+        }
+      );
 
       exitFullScreen();
-      // Clean up metadata after successful submission
       localStorage.removeItem(`student_info_${testId}`);
 
-      // Redirect all tests to /test-result with consistency
-      navigate("/test-result", { 
-        state: { 
-          result: response.data, 
-          testModel: test.testModel, 
+      navigate("/test-result", {
+        state: {
+          result: response.data,
+          testModel: test.testModel,
           testId,
           attempted: Object.keys(answers).length,
           totalQuestions: test.questions.length
-        } 
+        }
       });
-    } catch {
-      setError("Submission failed. Try again.");
+    } catch (err) {
+      // Security: Don't expose sensitive error details
+      const errorMsg = err.response?.status === 401
+        ? "Your session has expired. Please log in again."
+        : err.response?.status === 403
+          ? "You don't have permission to submit this test."
+          : "Submission failed. Please check your connection and try again.";
+
+      setWarningMessage(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -345,16 +422,16 @@ const TakeTest = () => {
 
   let testView;
   switch (test.testModel) {
-    case "fullmock": 
-      testView = isInstructor ? <InstructorFullMockTest {...commonProps} /> : <FullMockTest {...commonProps} />; 
+    case "fullmock":
+      testView = isInstructor ? <InstructorFullMockTest {...commonProps} /> : <FullMockTest {...commonProps} />;
       break;
-    case "premock": 
-      testView = isInstructor ? <InstructorPremockTest {...commonProps} /> : <PremockTest {...commonProps} />; 
+    case "premock":
+      testView = isInstructor ? <InstructorPremockTest {...commonProps} /> : <PremockTest {...commonProps} />;
       break;
     case "live": testView = <LiveTest {...commonProps} />; break;
     case "static": testView = <StaticTest {...commonProps} />; break;
     case "dynamic": testView = <DynamicTest {...commonProps} />; break;
-    default: 
+    default:
       testView = isInstructor ? <InstructorPremockTest {...commonProps} /> : <PremockTest {...commonProps} />;
   }
 
@@ -369,7 +446,7 @@ const TakeTest = () => {
 
       {/* MODALS (Shared across components for consistency) */}
       {warningMessage && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100]">
+        <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-[100] backdrop-blur-sm">
           <div className="bg-white p-6 rounded-lg text-center border-t-4 border-orange-500">
             <h2 className="text-red-600 text-xl font-bold mb-2">Security Warning</h2>
             <p className="text-gray-800 mb-4">{warningMessage}</p>
@@ -379,13 +456,69 @@ const TakeTest = () => {
       )}
 
       {showSubmitModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[100]">
-          <div className="bg-white p-6 rounded-lg text-center shadow-xl">
-            <h2 className="text-xl font-bold mb-4">Submit Test?</h2>
-            <p className="text-gray-600 mb-4">Are you sure you want to end the test?</p>
-            <div className="flex gap-4 justify-center">
-              <button onClick={() => setShowSubmitModal(false)} className="bg-gray-200 py-2 px-6 rounded font-medium">Cancel</button>
-              <button className="bg-blue-700 text-white py-2 px-6 rounded font-bold" onClick={handleSubmit}>Submit</button>
+        <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-[100] p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+              <h2 className="text-2xl font-bold text-white">Submit Test</h2>
+              <p className="text-blue-100 text-sm mt-1">Please review before submission</p>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <p className="text-gray-600 text-xs font-semibold uppercase tracking-wide mb-1">Questions Answered</p>
+                  <p className="text-2xl font-bold text-blue-700">{Object.keys(answers).length}/{test?.questions?.length || 0}</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <p className="text-gray-600 text-xs font-semibold uppercase tracking-wide mb-1">Time Spent</p>
+                  <p className="text-2xl font-bold text-green-700">{testStartTime ? formatTime(Math.floor((Date.now() - new Date(testStartTime).getTime()) / 1000)) : '0:00'}</p>
+                </div>
+              </div>
+
+              {/* Warning Message */}
+              <div className="bg-orange-50 border-l-4 border-orange-500 p-4 mb-6 rounded">
+                <p className="text-orange-900 font-semibold text-sm">Important:</p>
+                <p className="text-orange-800 text-sm mt-1">Once submitted, you cannot modify your answers. This action is final.</p>
+              </div>
+
+              {/* Questions Status */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <p className="text-gray-700 font-semibold text-sm mb-3">Test Status</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Answered:</span>
+                    <span className="font-bold text-green-600">{getStatusCounts().answered}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Not Answered:</span>
+                    <span className="font-bold text-red-600">{getStatusCounts().notAnswered}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Marked for Review:</span>
+                    <span className="font-bold text-purple-600">{getStatusCounts().markedReview}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowSubmitModal(false)}
+                  className="flex-1 bg-gray-100 text-gray-800 py-3 px-4 rounded-lg font-semibold hover:bg-gray-200 transition-colors border border-gray-300"
+                >
+                  Go Back
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Submitting...' : 'Submit Now'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -33,7 +33,7 @@ const TestList = () => {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const response = await axios.get(`${apiBase}/api/test/meta/filters`);
+        const response = await axios.get(`${apiBase}/api/test/filters`);
         setFilterMetadata(response.data);
       } catch (err) {
         console.error("Failed to fetch filter metadata", err);

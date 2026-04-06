@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import {
   FaCheckCircle, FaRocket, FaGem, FaBolt,
@@ -63,11 +63,10 @@ const instructorPlans = [
 
 const faqs = [
   { q: "When do instructors start paying?", a: "Early adopters join Beta for free. Pricing for advanced tools will be announced in Late 2026." },
-  { q: "Do credits ever expire?",           a: "No. Purchased credits stay in your account forever until you use them to unlock mock tests." },
-  { q: "Can I get a refund?",               a: "Yes — 7-day full refund if you haven't unlocked any premium test. See our Refund Policy for details." },
+  { q: "Do credits ever expire?", a: "No. Purchased credits stay in your account forever until you use them to unlock mock tests." },
+  { q: "Can I get a refund?", a: "Yes — 7-day full refund if you haven't unlocked any premium test. See our Refund Policy for details." },
 ];
 
-import React, { useState, useContext } from "react";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
 
@@ -78,36 +77,36 @@ const Pricing = () => {
   const [loading, setLoading] = useState(false);
   const plans = view === "student" ? studentPlans : instructorPlans;
   const accentStudent = "text-indigo-600";
-  const accentInstr   = "text-teal-600";
+  const accentInstr = "text-teal-600";
 
   const handleBuy = async (plan) => {
     if (plan.status === "Waitlist") return;
 
     if (!plan.tokenAmount) {
-       alert("This plan does not support direct token purchase yet.");
-       return;
+      alert("This plan does not support direct token purchase yet.");
+      return;
     }
 
     const token = localStorage.getItem("authToken");
     if (!token) {
-        alert("Please login first to buy tokens.");
-        return;
+      alert("Please login first to buy tokens.");
+      return;
     }
 
     setLoading(true);
     // Mocking Razorpay Payment Intent
     setTimeout(async () => {
-        try {
-            const headers = { Authorization: `Bearer ${token}` };
-            const response = await axios.post(`${apiBase}/api/payment/buy-tokens`, { tokenAmount: plan.tokenAmount }, { headers });
-            
-            alert(`Mock Payment Successful! You have been credited with ${plan.tokenAmount} tokens.`);
-        } catch (error) {
-            console.error(error);
-            alert("Error Mocking Payment");
-        } finally {
-            setLoading(false);
-        }
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        const response = await axios.post(`${apiBase}/api/payment/buy-tokens`, { tokenAmount: plan.tokenAmount }, { headers });
+
+        alert(`Mock Payment Successful! You have been credited with ${plan.tokenAmount} tokens.`);
+      } catch (error) {
+        console.error(error);
+        alert("Error Mocking Payment");
+      } finally {
+        setLoading(false);
+      }
     }, 1500); // simulate delay
   };
 
@@ -141,17 +140,16 @@ const Pricing = () => {
         <div className="flex justify-center">
           <div className="p-1.5 bg-white rounded-2xl shadow-md border border-slate-100 flex gap-1">
             {[
-              { id: "student",    label: "For Students",    icon: <FaUserGraduate /> },
+              { id: "student", label: "For Students", icon: <FaUserGraduate /> },
               { id: "instructor", label: "For Instructors", icon: <FaChalkboardTeacher /> },
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setView(tab.id)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
-                  view === tab.id
-                    ? "bg-slate-900 text-white shadow-md"
-                    : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
-                }`}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${view === tab.id
+                  ? "bg-slate-900 text-white shadow-md"
+                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
+                  }`}
               >
                 <span className={view === tab.id ? (tab.id === "student" ? "text-blue-400" : "text-purple-400") : ""}>{tab.icon}</span>
                 {tab.label}
@@ -165,11 +163,10 @@ const Pricing = () => {
           {plans.map((plan, idx) => (
             <div
               key={idx}
-              className={`relative bg-white rounded-3xl p-8 border flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                plan.popular
-                  ? "border-indigo-400 ring-2 ring-indigo-200 shadow-xl shadow-indigo-100/60"
-                  : "border-slate-100 shadow-md"
-              }`}
+              className={`relative bg-white rounded-3xl p-8 border flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${plan.popular
+                ? "border-indigo-400 ring-2 ring-indigo-200 shadow-xl shadow-indigo-100/60"
+                : "border-slate-100 shadow-md"
+                }`}
             >
               {/* Popular badge */}
               {plan.popular && (
@@ -180,11 +177,10 @@ const Pricing = () => {
 
               {/* Live / Waitlist badge */}
               {plan.status && (
-                <div className={`absolute top-6 right-6 inline-flex items-center gap-1.5 font-black text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-full ${
-                  plan.status === "Live"
-                    ? "text-teal-700 bg-teal-50 border border-teal-100"
-                    : "text-slate-400 bg-slate-50 border border-slate-100"
-                }`}>
+                <div className={`absolute top-6 right-6 inline-flex items-center gap-1.5 font-black text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-full ${plan.status === "Live"
+                  ? "text-teal-700 bg-teal-50 border border-teal-100"
+                  : "text-slate-400 bg-slate-50 border border-slate-100"
+                  }`}>
                   {plan.status === "Live" && <span className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-pulse" />}
                   {plan.status}
                 </div>
@@ -201,7 +197,7 @@ const Pricing = () => {
               <div className="mb-7 pb-7 border-b border-slate-100">
                 <span className="text-4xl font-black text-slate-900">{plan.price}</span>
                 {plan.credits && <span className="text-slate-400 font-semibold ml-2 text-sm">/ {plan.credits}</span>}
-                {plan.limit   && <span className="text-slate-400 font-semibold ml-2 text-sm">/ {plan.limit}</span>}
+                {plan.limit && <span className="text-slate-400 font-semibold ml-2 text-sm">/ {plan.limit}</span>}
               </div>
 
               {/* Features */}
@@ -218,15 +214,14 @@ const Pricing = () => {
               <button
                 disabled={plan.status === "Waitlist" || loading}
                 onClick={() => handleBuy(plan)}
-                className={`w-full py-4 rounded-2xl font-black text-base transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 group ${
-                  plan.popular
-                    ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30"
-                    : plan.status === "Waitlist" || loading
+                className={`w-full py-4 rounded-2xl font-black text-base transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 group ${plan.popular
+                  ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/30"
+                  : plan.status === "Waitlist" || loading
                     ? "bg-slate-100 text-slate-400 cursor-not-allowed"
                     : view === "student"
-                    ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
-                    : "bg-teal-50 text-teal-600 hover:bg-teal-100"
-                }`}
+                      ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                      : "bg-teal-50 text-teal-600 hover:bg-teal-100"
+                  }`}
               >
                 {loading ? "Processing..." : (plan.status === "Waitlist" ? "Join Waitlist" : "Get Started")}
                 {plan.status !== "Waitlist" && !loading && <FaArrowRight className="group-hover:translate-x-1 transition-transform text-sm" />}
@@ -262,9 +257,9 @@ const Pricing = () => {
           </div>
           <div className="grid sm:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
             {[
-              { n: "01", title: "Purchase Credits",  body: "Instant recharge using UPI, Card, or NetBanking once live." },
-              { n: "02", title: "Choose Tests",       body: "Browse our premium library and unlock tests that matter to you." },
-              { n: "03", title: "Battle Hard",        body: "Take the mock test or join a live session to ace your preparation." },
+              { n: "01", title: "Purchase Credits", body: "Instant recharge using UPI, Card, or NetBanking once live." },
+              { n: "02", title: "Choose Tests", body: "Browse our premium library and unlock tests that matter to you." },
+              { n: "03", title: "Battle Hard", body: "Take the mock test or join a live session to ace your preparation." },
             ].map(step => (
               <div key={step.n} className="group space-y-4">
                 <div className="w-14 h-14 bg-white rounded-2xl mx-auto flex items-center justify-center text-xl font-black text-slate-400 shadow-md border border-slate-100 group-hover:bg-indigo-600 group-hover:text-white group-hover:scale-110 transition-all duration-200">

@@ -1,5 +1,4 @@
 import React from "react";
-import { FaClock, FaExclamationCircle } from "react-icons/fa";
 
 const TestLayout = ({
   test,
@@ -58,46 +57,94 @@ const TestLayout = ({
   const isCritical = timeLeft < 300;
   const isVeryLow = timeLeft < 60;
 
+  // Determine security mode for badge display
+  const getSecurityBadge = () => {
+    if (test.isLive) return { label: 'Live Session', color: 'bg-purple-100 text-purple-700' };
+    if (test.isFullMock) return { label: 'Proctored', color: 'bg-red-100 text-red-700' };
+    if (test.isPremock) return { label: 'Secure', color: 'bg-blue-100 text-blue-700' };
+    return { label: null, color: null };
+  };
+
+  const securityBadge = getSecurityBadge();
+
   return (
     <div className="h-screen bg-gray-50 font-sans flex flex-col overflow-hidden">
       {/* HEADER */}
-      <div className="h-16 bg-white border-b border-gray-200 flex justify-between items-center px-4 z-50">
-        <div className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold text-blue-700 tracking-tight`}>Ignite Verse</div>
-        {!isMobile && <div className="font-medium text-sm text-gray-800">{test.name}</div>}
+      <div className="h-18 md:h-16 bg-white border-b-2 border-gray-200 flex justify-between items-center px-3 md:px-6 gap-2 md:gap-4 z-50 flex-wrap md:flex-nowrap">
+        <div className={`${isMobile ? 'text-lg' : 'text-2xl'} font-bold text-blue-700 tracking-tight flex-shrink-0`}>Ignite Verse</div>
+
+        {!isMobile && test.name && (
+          <div className="hidden lg:flex font-semibold text-xs text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full">
+            {test.name}
+          </div>
+        )}
+
+        {/* Security Mode Badge */}
+        {securityBadge.label && (
+          <div className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${securityBadge.color}`}>
+            {securityBadge.label}
+          </div>
+        )}
+
+        {/* User Info (Hidden on mobile) */}
+        {!isMobile && user?.name && (
+          <div className="hidden md:flex text-xs font-medium text-gray-600 bg-gray-50 px-3 py-1.5 rounded border border-gray-200">
+            {user.name.split(' ')[0]}
+          </div>
+        )}
 
         {/* TIMER SECTION - Enhanced Display */}
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-end gap-1">
+        <div className="flex items-center gap-2 md:gap-4 flex-col md:flex-row">
+          <div className="flex flex-col items-end gap-1.5">
+            {/* Timer Label */}
             <div className="flex items-center gap-2">
-              <FaClock className={`text-lg ${isLowTime ? (isCritical ? 'text-red-600 animate-spin' : 'text-orange-500') : 'text-blue-700'}`} />
-              <span className={`text-xs font-bold uppercase tracking-widest ${isLowTime ? (isCritical ? 'text-red-600' : 'text-orange-500') : 'text-gray-600'}`}>
-                {isVeryLow ? '⚠️ CRITICAL' : isLowTime ? '⚠️ Time Low' : 'Time Left'}
+              <span className={`text-[10px] md:text-xs font-bold uppercase tracking-widest ${isLowTime ? (isVeryLow ? 'text-red-600' : 'text-red-500' ? 'text-orange-500' : 'text-gray-600') : 'text-gray-600'}`}>
+                {isVeryLow ? 'CRITICAL' : isCritical ? 'URGENT' : isLowTime ? 'LOW' : 'TIME'}
               </span>
             </div>
 
-            {/* MAIN TIMER DISPLAY */}
-            <div className={`${timerStyles.bgColor} ${timerStyles.textColor} ${timerStyles.borderClass} ${timerStyles.pulseClass} ${timerStyles.shadowClass} py-2 px-4 rounded-lg text-lg font-black tracking-wider transition-all duration-300 min-w-[140px] text-center`}>
+            {/* MAIN TIMER DISPLAY - Enhanced */}
+            <div className={`${timerStyles.bgColor} ${timerStyles.textColor} ${timerStyles.borderClass} ${timerStyles.pulseClass} ${timerStyles.shadowClass} py-2 px-4 md:py-2.5 md:px-5 rounded-lg text-base md:text-lg font-black tracking-wider transition-all duration-300 min-w-[130px] md:min-w-[150px] text-center transform hover:scale-105`}>
               {formatTime(timeLeft)}
             </div>
           </div>
 
-          {/* CRITICAL TIME WARNING BADGE */}
+          {/* CRITICAL TIME WARNING BADGE - Enhanced */}
           {isCritical && (
-            <div className="flex flex-col items-center justify-center animate-pulse">
-              <FaExclamationCircle className="text-2xl text-red-600" />
-              <span className="text-[10px] font-black text-red-600 mt-0.5">URGENT</span>
+            <div className="flex flex-col items-center justify-center animate-pulse gap-0.5">
+              <span className={`text-[10px] md:text-xs font-black ${isVeryLow ? 'text-red-600' : 'text-red-500'}`}>
+                {isVeryLow ? 'FINAL' : 'ALERT'}
+              </span>
             </div>
           )}
         </div>
       </div>
 
-      {/* SECTION BAR */}
-      <div className="h-10 bg-white border-b border-gray-200 flex items-center px-4 justify-between">
-        <div className="bg-blue-700 text-white px-5 h-10 flex items-center text-sm font-bold rounded-tl rounded-tr">
-          {currentQuestion?.subject || "Quantitative Aptitude"}
+      {/* SECTION BAR - Enhanced */}
+      <div className="h-11 md:h-12 bg-gradient-to-r from-blue-50 to-blue-100 border-b-2 border-blue-200 flex items-center px-3 md:px-6 justify-between gap-2">
+        <div className="flex items-center gap-3 flex-1">
+          <span className="hidden md:inline text-xs font-bold text-gray-600 uppercase tracking-widest">Section</span>
+          <div className="bg-blue-700 text-white px-4 md:px-6 h-9 flex items-center text-xs md:text-sm font-bold rounded-md shadow-sm">
+            {currentQuestion?.subject || "Quantitative Aptitude"}
+          </div>
+          {currentQuestion?.category && (
+            <div className="hidden lg:flex items-center px-3 py-1.5 bg-white border border-blue-200 rounded-md text-xs text-gray-700 font-medium">
+              {currentQuestion.category}
+            </div>
+          )}
         </div>
-        <button className={`${isMobile ? 'flex' : 'hidden'} items-center gap-1.5 py-1 px-2 border border-blue-700 rounded text-blue-700 font-bold text-xs bg-transparent`} onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-          {isSidebarOpen ? 'Close Panel' : 'Question Panel'}
+
+        {/* Question Counter */}
+        <div className="text-xs md:text-sm font-bold text-gray-700 whitespace-nowrap">
+          Question {currentQuestionIndex + 1}/{test?.questions?.length || 0}
+        </div>
+
+        {/* Mobile Toggle */}
+        <button
+          className={`${isMobile ? 'flex' : 'hidden'} items-center gap-1.5 py-1.5 px-3 border-2 border-blue-700 rounded-md text-blue-700 font-bold text-xs bg-white hover:bg-blue-50 transition-colors`}
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        >
+          {isSidebarOpen ? 'Close' : 'Panel'}
         </button>
       </div>
 
@@ -112,7 +159,10 @@ const TestLayout = ({
         {/* COL 3: Sidebar */}
         <div className={`bg-blue-50 border-l border-gray-300 flex flex-col ${isMobile ? 'absolute w-10/12' : 'w-80'} top-0 right-0 bottom-0 z-50 transform ${isMobile ? (isSidebarOpen ? 'translate-x-0' : 'translate-x-full') : 'translate-x-0'} transition-transform duration-300 shadow-lg`}>
           <div className={`${isMobile ? 'flex' : 'hidden'} justify-end p-2`}>
-            <button onClick={() => setIsSidebarOpen(false)} className="bg-transparent border-none text-xl">✕</button>
+            <button onClick={() => setIsSidebarOpen(false)} className="bg-transparent border-none text-xl">×</button>
+          </div>
+          <div className="p-2 bg-blue-100 border-b border-blue-200">
+            <button className="w-full bg-blue-700 text-white py-2 rounded text-sm font-bold mb-2" onClick={() => setShowSubmitModal(true)}>Submit Test</button>
           </div>
           <div className="flex items-center gap-2 p-2 bg-blue-100 border-b border-blue-200">
             <div className="w-9 h-9 rounded-full bg-purple-700 text-white flex items-center justify-center font-bold">{user?.user?.name?.charAt(0) || 'U'}</div>
@@ -156,8 +206,7 @@ const TestLayout = ({
           </div>
 
           <div className="p-2 bg-blue-100 border-t border-blue-200">
-            <button className="w-full bg-blue-700 text-white py-2 rounded text-sm font-bold" onClick={() => setShowSubmitModal(true)}>Submit Test</button>
-            <div className="flex gap-1 mt-1 justify-between text-xs">
+            <div className="flex gap-1 justify-between text-xs">
               <button className="text-blue-700">Question Paper</button>
               <button className="text-blue-700">Instructions</button>
             </div>
@@ -165,15 +214,40 @@ const TestLayout = ({
         </div>
       </div>
 
-      {/* FOOTER */}
-      <div className={`bg-white border-t border-gray-200 flex ${isMobile ? 'flex-col gap-2 py-2' : 'h-16 items-center justify-between px-4'}`}>
-        <div className={`flex gap-2 ${isMobile ? 'w-full justify-between' : ''}`}>
-          <button className="bg-blue-500 text-white py-2 rounded text-xs font-medium" onClick={markForReview}>Mark for Review & Next</button>
-          <button className="bg-white text-gray-800 border border-gray-300 py-2 rounded text-xs font-medium" onClick={clearResponse}>Clear Response</button>
+      {/* FOOTER - Enhanced */}
+      <div className={`bg-gradient-to-r from-white to-gray-50 border-t-2 border-gray-200 flex ${isMobile ? 'flex-col gap-2 py-2 px-2' : 'h-18 items-center justify-between px-6 gap-4'}`}>
+        {/* Left Actions */}
+        <div className={`flex gap-2 ${isMobile ? 'w-full flex-col' : 'flex-row'}`}>
+          <button
+            onClick={markForReview}
+            className="flex-1 md:flex-none bg-gradient-to-r from-amber-500 to-amber-600 text-white py-2 md:py-2.5 px-3 md:px-4 rounded-md text-xs md:text-sm font-bold hover:shadow-lg hover:from-amber-600 hover:to-amber-700 transition-all transform hover:scale-105"
+          >
+            Mark & Next
+          </button>
+          <button
+            onClick={clearResponse}
+            className="flex-1 md:flex-none bg-white text-gray-800 border-2 border-gray-300 py-2 md:py-2.5 px-3 md:px-4 rounded-md text-xs md:text-sm font-bold hover:bg-gray-50 hover:border-gray-400 transition-all"
+          >
+            Clear
+          </button>
         </div>
-        <div className="flex gap-2">
-          <button className="bg-blue-700 text-white py-2 px-4 rounded text-sm font-bold" onClick={() => setShowSubmitModal(true)}>Submit</button>
-          {!isMobile && <button className="bg-blue-700 text-white py-2 px-4 rounded text-sm font-bold" onClick={saveAndNext}>Save & Next</button>}
+
+        {/* Right Actions */}
+        <div className={`flex gap-2 ${isMobile ? 'w-full' : 'flex-row'}`}>
+          {!isMobile && (
+            <button
+              onClick={saveAndNext}
+              className="bg-blue-600 text-white py-2.5 px-5 rounded-md text-sm font-bold hover:bg-blue-700 hover:shadow-lg transition-all transform hover:scale-105"
+            >
+              Save & Next
+            </button>
+          )}
+          <button
+            onClick={() => setShowSubmitModal(true)}
+            className="flex-1 md:flex-none bg-gradient-to-r from-green-600 to-green-700 text-white py-2 md:py-2.5 px-4 md:px-6 rounded-md text-xs md:text-sm font-bold hover:shadow-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105"
+          >
+            Submit Test
+          </button>
         </div>
       </div>
     </div>

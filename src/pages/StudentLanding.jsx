@@ -30,7 +30,7 @@ const StudentLanding = () => {
 
                 // Initialize form state
                 const initialForm = {};
-                testData.requiredStudentDetails.forEach(detail => initialForm[detail] = "");
+                (testData.requiredStudentDetails || []).forEach(detail => initialForm[detail] = "");
                 setStudentData(initialForm);
 
                 // Handle Scheduling
