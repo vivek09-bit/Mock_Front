@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
 
@@ -41,6 +41,8 @@ const TakeTest = () => {
   const [questionStatus, setQuestionStatus] = useState({});
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
+  const [showTokenWarning, setShowTokenWarning] = useState(false);
+  const [tokenWarningDismissed, setTokenWarningDismissed] = useState(false);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -124,7 +126,13 @@ const TakeTest = () => {
         }
 
         setTest({ ...questionsData, questions: finalQuestions });
-        if (userRes) setUser(userRes.data);
+        if (userRes) {
+          setUser(userRes.data);
+          // Check for low token balance
+          if (userRes.data?.tokens < 5) {
+            setShowTokenWarning(true);
+          }
+        }
 
         // Enforce student details if required by educator
         const requiredFields = questionsData.requiredStudentDetails || [];
@@ -442,6 +450,35 @@ const TakeTest = () => {
 
   return (
     <>
+      {/* LOW TOKEN WARNING BANNER */}
+      {showTokenWarning && !tokenWarningDismissed && !showGuidelines && user?.tokens !== undefined && (
+        <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 md:px-6 py-4 z-[99] shadow-lg animate-in fade-in slide-in-from-top duration-300">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 flex-wrap md:flex-nowrap">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <span className="text-2xl flex-shrink-0">⚠️</span>
+              <div className="min-w-0">
+                <p className="font-bold text-sm md:text-base">Low Token Balance!</p>
+                <p className="text-xs md:text-sm opacity-90">You have only {user.tokens} tokens remaining.</p>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Link
+                to="/token-shop"
+                className="whitespace-nowrap bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-700 transition-colors text-sm"
+              >
+                💰 Buy Tokens
+              </Link>
+              <button
+                onClick={() => setTokenWarningDismissed(true)}
+                className="whitespace-nowrap bg-white text-orange-600 px-4 py-2 rounded font-bold hover:bg-orange-50 transition-colors text-sm"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {testView}
 
       {/* MODALS (Shared across components for consistency) */}

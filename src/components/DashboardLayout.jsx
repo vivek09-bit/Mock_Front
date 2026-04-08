@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import Header from './Header'; // Import global Header
-import { 
-  FaThLarge, 
-  FaClipboardList, 
-  FaChartBar, 
-  FaUser, 
+import {
+  FaThLarge,
+  FaClipboardList,
+  FaChartBar,
+  FaUser,
   FaSignOutAlt
 } from 'react-icons/fa';
 
@@ -29,6 +29,7 @@ const DashboardLayout = () => {
     { name: 'Mock Tests', icon: <FaClipboardList />, path: '/tests' },
     { name: 'Typing Practice', icon: <FaClipboardList />, path: '/typing' },
     { name: 'Dashboard', icon: <FaThLarge />, path: '/dashboard' },
+    { name: 'Buy Tokens', icon: <FaClipboardList />, path: '/token-shop' },
     { name: 'Profile', icon: <FaUser />, path: `/profile/${user.username}` },
   ];
 
@@ -48,9 +49,9 @@ const DashboardLayout = () => {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside 
+        <aside
           className="hidden md:flex w-64 bg-purple-100 flex-col flex-shrink-0 shadow-xl z-20 relative overflow-hidden"
-          
+
         >
           {/* Sidebar Header/Brand (Optional if Header is present, keeping Nav title) */}
           <div className="p-6">
@@ -62,11 +63,10 @@ const DashboardLayout = () => {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                  location.pathname === item.path
+                className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group ${location.pathname === item.path
                     ? 'bg-white shadow-md transform scale-[1.02]'
                     : 'hover:bg-white/40'
-                }`}
+                  }`}
               >
                 <span className={`text-lg transition-colors ${location.pathname === item.path ? 'text-purple-900' : 'text-blue-900 group-hover:text-purple-900'}`}>
                   {item.icon}
@@ -91,11 +91,11 @@ const DashboardLayout = () => {
 
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col overflow-hidden relative bg-purple-50">
-           {/* Mobile Sidebar Trigger could go here */}
-           
-           <div className="flex-1 overflow-y-auto p-4 md:p-8">
-             <Outlet />
-           </div>
+          {/* Mobile Sidebar Trigger could go here */}
+
+          <div className="flex-1 overflow-y-auto p-4 md:p-8">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

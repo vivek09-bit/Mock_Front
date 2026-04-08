@@ -93,6 +93,17 @@ const TestLayout = ({
           </div>
         )}
 
+        {/* Token Balance Display */}
+        {user?.tokens !== undefined && (
+          <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${user.tokens > 10 ? 'bg-green-100 text-green-800' :
+              user.tokens >= 5 ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+            }`}>
+            <span className="text-lg">💰</span>
+            <span className="font-semibold">{user.tokens} tokens</span>
+          </div>
+        )}
+
         {/* TIMER SECTION - Enhanced Display */}
         <div className="flex items-center gap-2 md:gap-4 flex-col md:flex-row">
           <div className="flex flex-col items-end gap-1.5">

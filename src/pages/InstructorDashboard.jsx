@@ -13,30 +13,29 @@ const InstructorDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        
+
         // Fetch tests
         const testsRes = await axios.get(`${apiBase}/api/instructor/my-tests`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const tests = testsRes.data.tests;
-        
+
         // Fetch students (to get unique count)
         const studentsRes = await axios.get(`${apiBase}/api/instructor/all-students`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const students = studentsRes.data.students || [];
-        
-        // Calculate average score across all students
-        const avgScore = students.length > 0 
+
+        const avgScore = students.length > 0
           ? Math.round(students.reduce((acc, s) => acc + s.avgScore, 0) / students.length)
           : 0;
-        
+
         setStats({
           totalTests: tests.length,
           totalStudents: students.length,
           avgScore: avgScore
         });
-        
+
         setLoading(false);
       } catch (err) {
         console.error("Error loading dashboard stats", err);
@@ -65,7 +64,7 @@ const InstructorDashboard = () => {
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Educator Portal</h1>
           <p className="text-slate-500 font-medium">Managing your classes, students, and evaluations</p>
         </div>
-        <Link 
+        <Link
           to="/instructor/create-test"
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-indigo-200"
         >
@@ -104,7 +103,7 @@ const InstructorDashboard = () => {
             <p className="text-indigo-200 mb-6 leading-relaxed">
               Unlock the power of AI to generate comprehensive question sets tailored to your curriculum in seconds.
             </p>
-            <Link 
+            <Link
               to="/instructor/create-test?tab=ai"
               className="inline-block bg-white text-indigo-900 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition-colors"
             >

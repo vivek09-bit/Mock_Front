@@ -33,7 +33,7 @@ import StudentLanding from "./pages/StudentLanding";
 import SubmissionSuccess from "./pages/SubmissionSuccess";
 import GlobalLiveJoin from "./pages/GlobalLiveJoin";
 import Pricing from "./pages/Pricing";
-
+import TokenShop from "./pages/TokenShop";
 
 import InstructorStudentManagement from "./pages/InstructorStudentManagement";
 import LiveSessionHost from "./pages/LiveSessionHost";
@@ -94,6 +94,7 @@ const App = () => {
           <Route path="/analytics" element={<UserProfile />} />
           <Route path="/profile/:username" element={<Profile />} />
           <Route path="/my-tests" element={<MyTests />} />
+          <Route path="/token-shop" element={<TokenShop />} />
           <Route path="/tests" element={<TestList />} />
 
           {/* Instructor Specific Paths protected by role */}
