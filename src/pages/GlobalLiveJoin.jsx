@@ -32,7 +32,7 @@ const GlobalLiveJoin = () => {
     });
 
     useEffect(() => {
-        const socket = io(apiBase.replace('/api', ''), { transports: ["websocket", "polling"] });
+        const socket = io(apiBase.replace(/\/api\/?$/, ''), { transports: ["websocket", "polling"] });
         socketRef.current = socket;
 
         socket.on('passcode-verified', ({ testId, testName, requiredFields }) => {
