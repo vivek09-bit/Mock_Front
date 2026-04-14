@@ -57,8 +57,9 @@ const LiveSessionJoin = () => {
 
     // ── Socket setup ────────────────────────────────────────────────────────
     useEffect(() => {
-        console.log(`[SOCKET_INIT] Creating Socket.io connection to: ${apiBase.replace("/api", "")}`);
-        const socket = io(apiBase.replace("/api", ""), { transports: ["websocket", "polling"] });
+        const socketUrl = new URL(apiBase).origin;
+        console.log(`[SOCKET_INIT] Creating Socket.io connection to: ${socketUrl}`);
+        const socket = io(socketUrl, { transports: ["websocket", "polling"] });
         socketRef.current = socket;
 
         socket.on("connect", () => {

@@ -47,8 +47,8 @@ const LiveSessionHost = () => {
         setPasscode(generatedPasscode);
 
         // 1. Create socket immediately so listeners are attached before connection
-        socket = io(apiBase.replace('/api', ''), { transports: ['websocket', 'polling'] });
-        console.log(`[HOST_SOCKET_INIT] Creating connection to: ${apiBase.replace('/api', '')}`);
+        socket = io(apiBase.replace(/\/api\/?$/, ''), { transports: ['websocket', 'polling'] });
+        console.log(`[HOST_SOCKET_INIT] Creating connection to: ${apiBase.replace(/\/api\/?$/, '')}`);
 
         // Connection logging
         socket.on('connect', () => {
