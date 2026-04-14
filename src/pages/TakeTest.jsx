@@ -112,9 +112,13 @@ const TakeTest = () => {
         let finalQuestions = [];
 
         try {
+          // Get student details from localStorage if they exist
+          const savedInfo = localStorage.getItem(`student_info_${testId}`);
+          const studentDetails = savedInfo ? JSON.parse(savedInfo) : null;
+
           const startRes = await axios.post(
             `${apiBase}/api/test/start`,
-            { testId },
+            { testId, studentDetails },
             { headers: token ? { Authorization: `Bearer ${token}` } : {} }
           );
           questionsData = startRes.data;

@@ -153,6 +153,7 @@ const LiveSessionHost = () => {
         }
         const nextIndex = currentQuestionIndex + 1;
         console.log(`[HOST_NEXT_QUESTION] Moving to Q${nextIndex}`);
+        setCurrentQuestionIndex(nextIndex);
         setLiveData({ totalResponses: 0, correctNames: [] });
         setRankedCorrect([]);
         setTimer(30);
