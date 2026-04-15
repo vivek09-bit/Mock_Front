@@ -24,10 +24,54 @@ const TestAnalytics = () => {
             const res = await axios.get(`${apiBase}/api/instructor/test-stats/${testId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setStats(res.data.stats || []);
-            setSummary(res.data.summary);
+
+            const normalizedStats = (res.data.stats || []).map((record) => {
+                const attemptsArray = record.attempts
+                    ? Array.isArray(record.attempts)
+                        ? record.attempts
+                        : Object.values(record.attempts)
+                    : [];
+
+                const latestAttempt =
+                    attemptsArray.length > 0
+                        ? attemptsArray[attemptsArray.length - 1]
+                        : null;
+
+                const submissionCount = attemptsArray.length;
+
+                const startedAt =
+                    latestAttempt?.startedAt ||
+                    record.startedAt ||
+                    record.lastAttempted ||
+                    record.createdAt;
+
+                const submittedAt =
+                    latestAttempt?.submittedAt ||
+                    record.submittedAt ||
+                    null;
+
+                const isSubmitted =
+                    record.testStatus === "SUBMITTED" ||
+                    !!submittedAt ||
+                    submissionCount > 0;
+
+                return {
+                    ...record,
+                    attemptsArray,
+                    latestAttempt,
+                    submissionCount,
+                    startedAt,
+                    submittedAt,
+                    testStatus: isSubmitted ? "SUBMITTED" : (record.testStatus || "STARTED"),
+                    bestScore: record.bestScore ?? latestAttempt?.score ?? 0,
+                };
+            });
+
+            setStats(normalizedStats);
+            setSummary(res.data.summary || null);
             setRequiredFields(res.data.requiredFields || []);
             setLoading(false);
+            // console.log("Normalized stats:", normalizedStats);
         } catch (err) {
             console.error("Error loading stats", err);
             setLoading(false);
@@ -79,22 +123,32 @@ const TestAnalytics = () => {
             const name = (record.userId?.name || record.studentDetails?.Name || record.studentDetails?.name || "").toLowerCase();
             const email = (record.userId?.email || record.studentDetails?.Email || record.studentDetails?.email || "").toLowerCase();
 
-            // Search in custom fields too
-            const customFieldsText = Object.values(record.studentDetails || {}).join(" ").toLowerCase();
+            const customFieldsText = Object.values(record.studentDetails || {})
+                .map(v => String(v ?? ""))
+                .join(" ")
+                .toLowerCase();
 
-            const matchesSearch = name.includes(searchTerm.toLowerCase()) ||
+            const matchesSearch =
+                name.includes(searchTerm.toLowerCase()) ||
                 email.includes(searchTerm.toLowerCase()) ||
                 customFieldsText.includes(searchTerm.toLowerCase());
 
-            // Handle both submitted and started-but-not-submitted students
-            const isSubmitted = record.testStatus === 'SUBMITTED';
-            const isQualified = isSubmitted ? record.bestScore >= (record.testDetails?.passingScore || 0) : false;
+            const isSubmitted =
+                record.testStatus === "SUBMITTED" ||
+                !!record.submittedAt ||
+                (record.submissionCount || 0) > 0;
 
-            const matchesStatus = statusFilter === "all" ||
+            const isQualified = isSubmitted
+                ? record.bestScore >= (record.testDetails?.passingScore || 0)
+                : false;
+
+            const matchesStatus =
+                statusFilter === "all" ||
                 (statusFilter === "qualified" && isSubmitted && isQualified) ||
                 (statusFilter === "failed" && isSubmitted && !isQualified);
 
-            const matchesStatsFilter = statsFilter === "all" ||
+            const matchesStatsFilter =
+                statsFilter === "all" ||
                 (statsFilter === "submitted" && isSubmitted) ||
                 (statsFilter === "started" && !isSubmitted);
 
@@ -105,16 +159,22 @@ const TestAnalytics = () => {
     const exportToCSV = () => {
         if (filteredStats.length === 0) return;
 
-        // Headers: Basic + Dynamic Fields
         const headers = ["Name", "Email", "Date", "Status", "Score", "Submission Count", ...requiredFields];
 
         const rows = filteredStats.map(r => {
-            const isSubmitted = r.testStatus === 'SUBMITTED';
-            const isQualified = isSubmitted ? r.bestScore >= (r.testDetails?.passingScore || 0) : false;
+            const isSubmitted =
+                r.testStatus === "SUBMITTED" ||
+                !!r.submittedAt ||
+                (r.submissionCount || 0) > 0;
+
+            const isQualified = isSubmitted
+                ? r.bestScore >= (r.testDetails?.passingScore || 0)
+                : false;
+
             return [
                 r.userId?.name || r.studentDetails?.Name || r.studentDetails?.name || 'Anonymous',
                 r.userId?.email || r.studentDetails?.Email || r.studentDetails?.email || 'N/A',
-                new Date(r.startedAt || r.lastAttempted || r.createdAt).toLocaleDateString(),
+                new Date(r.startedAt || r.lastAttempted || r.createdAt).toLocaleString(),
                 isSubmitted ? (isQualified ? "QUALIFIED" : "FAILED") : "STARTED",
                 isSubmitted ? r.bestScore : "N/A",
                 r.submissionCount || 0,
@@ -261,7 +321,10 @@ const TestAnalytics = () => {
                                 </tr>
                             ) : (
                                 filteredStats.map((record) => {
-                                    const isSubmitted = record.testStatus === 'SUBMITTED';
+                                    const isSubmitted =
+                                        record.testStatus === "SUBMITTED" ||
+                                        !!record.submittedAt ||
+                                        (record.submissionCount || 0) > 0;
                                     const isQualified = isSubmitted ? record.bestScore >= (record.testDetails?.passingScore || 0) : false;
                                     return (
                                         <tr key={record._id} className={`hover:bg-slate-50/50 transition-colors group ${record.isFlagged ? 'bg-amber-50/30' : ''}`}>
