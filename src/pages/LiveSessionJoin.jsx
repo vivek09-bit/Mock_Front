@@ -150,12 +150,12 @@ const LiveSessionJoin = () => {
         const sanitizedPasscode = passcode.trim().toUpperCase();
 
         if (!socketRef.current) {
-            setError("⚠️ Connection error. Please refresh the page.");
+            setError("Connection error. Please refresh the page.");
             return;
         }
 
         if (!socketRef.current.connected) {
-            setError("⚠️ Not connected to server. Please refresh and try again.");
+            setError("Not connected to server. Please refresh and try again.");
             return;
         }
 
@@ -187,9 +187,7 @@ const LiveSessionJoin = () => {
         if (!trimmedName) {
             return setError("Please enter your display name.");
         }
-        if (trimmedName.length < 2) {
-            return setError("Name must be at least 2 characters long.");
-        }
+
         if (trimmedName.length > 50) {
             return setError("Name must be less than 50 characters.");
         }
@@ -201,7 +199,7 @@ const LiveSessionJoin = () => {
         if (!trimmedPasscode) {
             return setError("Please enter the Game PIN.");
         }
-        if (trimmedPasscode.length < 4 || trimmedPasscode.length > 6) {
+        if (trimmedPasscode.length > 4 || trimmedPasscode.length > 6) {
             return setError("Game PIN must be 4-6 characters.");
         }
         if (!/^[A-Z0-9]*$/.test(trimmedPasscode)) {

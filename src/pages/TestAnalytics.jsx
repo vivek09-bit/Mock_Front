@@ -14,8 +14,9 @@ const TestAnalytics = () => {
     const [requiredFields, setRequiredFields] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [statsFilter, setStatsFilter] = useState("all"); // 'all', 'submitted', 'started'
+    const [statsFilter, setStatsFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [gamePinFilter, setGamePinFilter] = useState("all");
     const { apiBase } = useContext(ThemeContext);
 
     const fetchData = async () => {
@@ -118,6 +119,14 @@ const TestAnalytics = () => {
         }
     };
 
+    const uniquePins = useMemo(() => {
+        const pins = new Set();
+        stats.forEach(s => {
+            if (s.gamePin) pins.add(s.gamePin);
+        });
+        return Array.from(pins).sort();
+    }, [stats]);
+
     const filteredStats = useMemo(() => {
         return stats.filter(record => {
             const name = (record.userId?.name || record.studentDetails?.Name || record.studentDetails?.name || "").toLowerCase();
@@ -152,9 +161,11 @@ const TestAnalytics = () => {
                 (statsFilter === "submitted" && isSubmitted) ||
                 (statsFilter === "started" && !isSubmitted);
 
-            return matchesSearch && matchesStatus && matchesStatsFilter;
+            const matchesPin = gamePinFilter === "all" || record.gamePin === gamePinFilter;
+
+            return matchesSearch && matchesStatus && matchesStatsFilter && matchesPin;
         });
-    }, [stats, searchTerm, statusFilter, statsFilter]);
+    }, [stats, searchTerm, statusFilter, statsFilter, gamePinFilter]);
 
     const exportToCSV = () => {
         if (filteredStats.length === 0) return;
@@ -255,8 +266,8 @@ const TestAnalytics = () => {
             </div>
 
             {/* Filters Bar */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="relative w-full md:w-96">
+            <div className="flex flex-col xl:flex-row gap-4 items-center justify-between">
+                <div className="relative w-full xl:w-80">
                     <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                         type="text"
@@ -266,8 +277,22 @@ const TestAnalytics = () => {
                         className="w-full pl-12 pr-4 py-3 bg-white rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-sm font-medium"
                     />
                 </div>
-                <div className="flex flex-col md:flex-row gap-3">
-                    <div className="flex bg-white p-1 rounded-xl border border-slate-200 w-full md:w-auto">
+                <div className="flex flex-wrap gap-3">
+                    {uniquePins.length > 0 && (
+                        <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm w-full md:w-auto">
+                            <select 
+                                value={gamePinFilter} 
+                                onChange={(e) => setGamePinFilter(e.target.value)}
+                                className="w-full px-3 py-2 text-xs font-bold text-slate-600 bg-transparent outline-none cursor-pointer"
+                            >
+                                <option value="all">All Game Pins</option>
+                                {uniquePins.map(pin => (
+                                    <option key={pin} value={pin}>PIN: {pin}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                    <div className="flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm w-full md:w-auto">
                         {['all', 'started', 'submitted'].map(f => (
                             <button
                                 key={f}
@@ -337,9 +362,14 @@ const TestAnalytics = () => {
                                                         <p className="text-slate-800 font-bold block leading-tight">
                                                             {record.userId?.name || record.studentDetails?.Name || record.studentDetails?.name || 'Guest'}
                                                         </p>
-                                                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-tighter">
+                                                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-tighter mt-0.5">
                                                             {record.userId?.email || record.studentDetails?.Email || record.studentDetails?.email || 'Individual Session'}
                                                         </p>
+                                                        {record.gamePin && (
+                                                            <span className="inline-block mt-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-black tracking-widest rounded-md border border-amber-200">
+                                                                PIN: {record.gamePin}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </td>

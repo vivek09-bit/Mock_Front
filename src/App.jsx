@@ -79,7 +79,7 @@ const App = () => {
           <Route path="/start-test/:testId" element={<StudentLanding />} />
           <Route path='/test-result' element={<TestResult />} />
           <Route path='/submission-success' element={<SubmissionSuccess />} />
-          {/* <Route path='/join' element={<GlobalLiveJoin />} /> */}
+          <Route path='/join' element={<GlobalLiveJoin />} />
           <Route path='/pricing' element={<Pricing />} />
 
           <Route path="*" element={<NotFound />} />

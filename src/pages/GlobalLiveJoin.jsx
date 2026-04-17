@@ -28,11 +28,23 @@ const GlobalLiveJoin = () => {
     // Game State
     const [gameState, setGameState] = useState({
         currentQuestionIndex: -1,
-        test: null
+        test: null,
+        myScore: 0
     });
+    const [showResult, setShowResult] = useState(false);
+    const [isCorrect, setIsCorrect] = useState(false);
+
+    const nameRef = useRef(name);
+    const passcodeRef = useRef(passcode);
+    
+    useEffect(() => {
+        nameRef.current = name;
+        passcodeRef.current = passcode;
+    }, [name, passcode]);
 
     useEffect(() => {
-        const socket = io(apiBase.replace(/\/api\/?$/, ''), { transports: ["websocket", "polling"] });
+        const socketUrl = new URL(apiBase).origin;
+        const socket = io(socketUrl, { transports: ["websocket", "polling"] });
         socketRef.current = socket;
 
         socket.on('passcode-verified', ({ testId, testName, requiredFields }) => {
@@ -41,10 +53,10 @@ const GlobalLiveJoin = () => {
             setIsVerifying(false);
 
             if (requiredFields && requiredFields.length > 0) {
-                setStudentDetails(prev => ({ ...prev, Name: name }));
+                setStudentDetails(prev => ({ ...prev, Name: nameRef.current }));
                 setJoinStage("details");
             } else {
-                emitJoin(testId, name, passcode);
+                emitJoin(testId, nameRef.current, passcodeRef.current);
             }
         });
 
@@ -65,11 +77,25 @@ const GlobalLiveJoin = () => {
 
         socket.on('test-started', ({ currentQuestionIndex }) => {
             setStatus("playing");
+            setShowResult(false);
             setGameState(prev => ({ ...prev, currentQuestionIndex }));
         });
 
         socket.on('next-question', ({ currentQuestionIndex }) => {
+            setShowResult(false);
             setGameState(prev => ({ ...prev, currentQuestionIndex }));
+        });
+        
+        socket.on('answer-revealed', ({ responses, participants }) => {
+            const myResponse = responses?.find(r => r.socketId === socket.id);
+            setIsCorrect(!!myResponse?.isCorrect);
+            const me = participants?.find(p => p.socketId === socket.id);
+            if (me) setGameState(prev => ({ ...prev, myScore: me.score }));
+            setShowResult(true);
+        });
+
+        socket.on('session-ended', () => {
+            setStatus("finished");
         });
 
         socket.on('kicked', () => {
@@ -83,9 +109,9 @@ const GlobalLiveJoin = () => {
         });
 
         return () => {
-            if (socketRef.current) socketRef.current.disconnect();
+            if (socket) socket.disconnect();
         };
-    }, [apiBase, name, passcode]);
+    }, [apiBase]);
 
     const emitJoin = (tid, sName, sPasscode) => {
         const finalName = studentDetails["Name"] || studentDetails["Full Name"] || sName || "Guest";
@@ -122,11 +148,9 @@ const GlobalLiveJoin = () => {
 
     const handleAnswer = (answer) => {
         if (!testId) return console.error("Missing testId for submission");
-        const currentQuestion = gameState.test?.questions[gameState.currentQuestionIndex];
-        const isCorrect = currentQuestion?.correctAnswer?.includes(answer);
         console.log(`[SUBMIT_ANSWER] TestID: ${testId}, Answer: ${answer}`);
         if (socketRef.current) {
-            socketRef.current.emit('student-submit-answer', { testId, answer, isCorrect });
+            socketRef.current.emit('student-submit-answer', { testId, answer });
         }
     };
 
@@ -259,13 +283,56 @@ const GlobalLiveJoin = () => {
 
     if (status === "playing") {
         return (
-            <LiveTest 
-                test={gameState.test}
-                currentQuestionIndex={gameState.currentQuestionIndex}
-                handleAnswerChange={handleAnswer}
-                answers={{}} 
-                isHost={false}
-            />
+            <div className="relative min-h-screen">
+                <LiveTest 
+                    test={gameState.test}
+                    currentQuestionIndex={gameState.currentQuestionIndex}
+                    handleAnswerChange={handleAnswer}
+                    answers={{}} 
+                    isHost={false}
+                />
+
+                {showResult && (
+                    <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-center backdrop-blur-xl p-4 ${isCorrect ? "bg-green-600/90" : "bg-red-600/90"}`}>
+                        <div className="bg-white p-8 md:p-12 rounded-[3rem] md:rounded-[4rem] shadow-2xl flex flex-col items-center gap-6 md:gap-8 transform rotate-3 w-full max-w-sm">
+                            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-[2rem] md:rounded-[2.5rem] flex items-center justify-center text-5xl md:text-6xl text-white shadow-xl ${isCorrect ? "bg-green-500 animate-bounce" : "bg-red-500"}`}>
+                                {isCorrect ? "✓" : "✕"}
+                            </div>
+                            <div className="text-center space-y-2">
+                                <h2 className={`text-5xl md:text-6xl font-black tracking-tighter ${isCorrect ? "text-green-600" : "text-red-600"}`}>
+                                    {isCorrect ? "Brilliant!" : "Not Quite!"}
+                                </h2>
+                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs md:text-sm">
+                                    {isCorrect ? "You got it right!" : "Better luck next question!"}
+                                </p>
+                            </div>
+                            <div className="bg-slate-50 px-8 py-4 rounded-3xl border border-slate-100 flex flex-col items-center shadow-inner w-full">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Score</span>
+                                <span className="text-4xl font-black text-indigo-600 tracking-tight">{gameState.myScore || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    if (status === "finished") {
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+                <div className="text-8xl mb-6 z-10">🏆</div>
+                <h2 className="text-5xl font-black text-white tracking-tighter z-10">Session Over!</h2>
+                <p className="text-amber-200 text-xl font-medium mt-4 mb-8 z-10">
+                    Final Score: <span className="text-amber-500 font-black">{gameState.myScore || 0}</span> pts
+                </p>
+                <button
+                    onClick={() => navigate("/")}
+                    className="bg-amber-500 text-slate-950 px-10 py-4 rounded-2xl font-black text-lg hover:bg-amber-400 transition-all z-10"
+                >
+                    Return Home
+                </button>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] animate-pulse"></div>
+            </div>
         );
     }
 
