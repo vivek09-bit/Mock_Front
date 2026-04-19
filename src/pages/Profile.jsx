@@ -9,7 +9,10 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
   BarChart, Bar, Cell
 } from 'recharts';
-import { FaClipboardList, FaTrophy, FaCheckCircle, FaStar, FaChevronRight, FaPlus, FaCamera } from 'react-icons/fa';
+import { 
+  FaClipboardList, FaTrophy, FaCheckCircle, FaStar, FaChevronRight, 
+  FaPlus, FaCamera, FaUniversity, FaTrain, FaBook, FaGlobe, FaEdit, FaSave
+} from 'react-icons/fa';
 
 const Profile = () => {
   const [testRecords, setTestRecords] = useState([]);
@@ -19,6 +22,11 @@ const Profile = () => {
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
   const [newProfile, setNewProfile] = useState({});
+  const [interestMetadata, setInterestMetadata] = useState([]);
+  const [showInterestModal, setShowInterestModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [savingInterest, setSavingInterest] = useState(false);
   const { apiBase } = useContext(ThemeContext);
   const navigate = useNavigate();
   const inFlight = useRef(new Set());
@@ -63,8 +71,18 @@ const Profile = () => {
       fetchProfileData();
     };
 
-    initializeDashboard();
-  }, []);
+      initializeDashboard();
+      fetchFilters();
+    }, []);
+  
+    const fetchFilters = async () => {
+      try {
+        const response = await axios.get(`${apiBase}/api/test/filters`);
+        setInterestMetadata(response.data || []);
+      } catch (err) {
+        console.error("Error fetching filters:", err);
+      }
+    };
 
   const fetchProfileData = async () => {
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
@@ -92,6 +110,48 @@ const Profile = () => {
       setError('Error fetching profile data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateInterest = async (category, exam) => {
+    setSavingInterest(true);
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    try {
+      const response = await axios.put(`${apiBase}/api/user/preferences`, {
+        interestCategory: category,
+        interestExam: exam
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Update local state
+      setUserData(prev => ({
+        ...prev,
+        preferences: {
+          ...prev.preferences,
+          interestCategory: category,
+          interestExam: exam
+        }
+      }));
+      
+      // Update local storage user object
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      if (storedUser) {
+        storedUser.preferences = {
+          ...storedUser.preferences,
+          interestCategory: category,
+          interestExam: exam
+        };
+        localStorage.setItem('user', JSON.stringify(storedUser));
+      }
+
+      setShowInterestModal(false);
+      setSelectedCategory(null);
+    } catch (err) {
+      console.error("Failed to update interest:", err);
+      alert("Failed to update interest. Please try again.");
+    } finally {
+      setSavingInterest(false);
     }
   };
 
@@ -423,6 +483,38 @@ const Profile = () => {
 
               </div>
 
+              {/* Exam Interests Section - Moved for visibility */}
+              <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden group">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-2xl">
+                    {(() => {
+                      const cat = userData?.preferences?.interestCategory?.toLowerCase();
+                      if (cat === 'banking') return <FaUniversity />;
+                      if (cat === 'ssc') return <FaBook />;
+                      if (cat === 'railways') return <FaTrain />;
+                      return <FaGlobe />;
+                    })()}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-800">Exam Goals</h3>
+                    <p className="text-slate-500 font-medium">
+                      {userData?.preferences?.interestCategory && userData?.preferences?.interestExam 
+                        ? `${userData.preferences.interestCategory} • ${userData.preferences.interestExam}` 
+                        : "Set your exam goals to get personalized tests"}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => {
+                    setSelectedCategory(userData?.preferences?.interestCategory || null);
+                    setShowInterestModal(true);
+                  }}
+                  className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg shadow-blue-100"
+                >
+                  <FaEdit size={14} /> {userData?.preferences?.interestCategory ? 'Update Goals' : 'Set Your Goals'}
+                </button>
+              </div>
+
               {/* Additional Profile Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
@@ -460,7 +552,92 @@ const Profile = () => {
                     </div>
                   </div>
                 </div>
+
               </div>
+
+              {/* Interest Selection Modal */}
+              {showInterestModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
+                    <div className="p-8">
+                      <h2 className="text-2xl font-bold text-slate-800 mb-2">Change Your Goal</h2>
+                      <p className="text-slate-500 mb-8">Select your target category and exam for personalized tests.</p>
+
+                      {!selectedCategory ? (
+                        <div className="grid grid-cols-2 gap-4">
+                          {interestMetadata.map((filter) => (
+                            <button
+                              key={filter.category}
+                              onClick={() => setSelectedCategory(filter.category)}
+                              className="flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-slate-100 hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                            >
+                              <div className="text-3xl text-blue-500 mb-3 group-hover:scale-110 transition-transform">
+                                {filter.category === 'Banking' ? <FaUniversity /> :
+                                 filter.category === 'SSC' ? <FaBook /> :
+                                 filter.category === 'Railways' ? <FaTrain /> : <FaGlobe />}
+                              </div>
+                              <span className="font-bold text-slate-700">{filter.category}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-2 text-blue-600 font-bold mb-4">
+                            <button onClick={() => { setSelectedCategory(null); setSelectedExam(null); }} className="hover:underline">Categories</button>
+                            <FaChevronRight size={10} className="text-slate-300" />
+                            <span>{selectedCategory}</span>
+                            {selectedExam && (
+                              <>
+                                <FaChevronRight size={10} className="text-slate-300" />
+                                <span className="text-slate-800">{selectedExam}</span>
+                              </>
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+                            <button
+                              onClick={() => setSelectedExam('All')}
+                              className={`p-4 rounded-xl border-2 font-semibold transition-all text-left ${selectedExam === 'All' ? 'border-blue-500 bg-blue-50' : 'border-slate-100 text-slate-700 hover:border-blue-500'}`}
+                            >
+                              All {selectedCategory} Exams
+                            </button>
+                            {interestMetadata.find(f => f.category === selectedCategory)?.exams.map(exam => (
+                              <button
+                                key={exam}
+                                onClick={() => setSelectedExam(exam)}
+                                className={`p-4 rounded-xl border-2 font-semibold transition-all text-left ${selectedExam === exam ? 'border-blue-500 bg-blue-50' : 'border-slate-100 text-slate-700 hover:border-blue-500'}`}
+                              >
+                                {exam}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="bg-slate-50 p-6 flex justify-end gap-4">
+                      <button 
+                        onClick={() => { setShowInterestModal(false); setSelectedCategory(null); setSelectedExam(null); }}
+                        className="px-6 py-2.5 font-bold text-slate-500 hover:text-slate-700 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      {selectedCategory && (
+                        <button 
+                          disabled={!selectedExam || savingInterest}
+                          onClick={() => handleUpdateInterest(selectedCategory, selectedExam)}
+                          className="px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          {savingInterest ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          ) : <FaSave />}
+                          Set Goal
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

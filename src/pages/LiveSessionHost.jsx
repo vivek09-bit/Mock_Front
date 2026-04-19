@@ -78,6 +78,18 @@ const LiveSessionHost = () => {
 
         socket.on('session-ended', () => {
             console.log('[HOST_SESSION_ENDED] Host ended the test session');
+            sessionStorage.removeItem(`active_session_${testId}`);
+        });
+
+        socket.on('session-resumed', (data) => {
+            console.log('[HOST_RESUMED] Successfully re-connected to session:', data);
+            setPasscode(data.passcode);
+            setStatus(data.status);
+            setCurrentQuestionIndex(data.currentQuestionIndex);
+            setParticipants(data.participants || []);
+            setTimer(data.timer);
+            setLoading(false);
+            if (data.status === 'revealed') setShowResults(true);
         });
 
         // 3. Fetch test, then register session only AFTER socket is confirmed connected
@@ -91,21 +103,29 @@ const LiveSessionHost = () => {
 
                 const testData = res.data.test;
                 setTest(testData);
-                setLoading(false);
 
-                const emitCreate = () => {
-                    socket.emit('host-create-session', {
-                        testId,
-                        passcode: generatedPasscode,
-                        questions: testData.questions,
-                    });
+                const emitAction = () => {
+                    const savedSession = sessionStorage.getItem(`active_session_${testId}`);
+                    if (savedSession) {
+                        console.log("[HOST] Attempting to REJOIN session...");
+                        socket.emit('host-rejoin-session', { testId });
+                    } else {
+                        console.log("[HOST] Creating NEW session...");
+                        sessionStorage.setItem(`active_session_${testId}`, generatedPasscode);
+                        socket.emit('host-create-session', {
+                            testId,
+                            passcode: generatedPasscode,
+                            questions: testData.questions,
+                        });
+                        setLoading(false);
+                    }
                 };
 
                 // Only emit when socket is confirmed open
                 if (socket.connected) {
-                    emitCreate();
+                    emitAction();
                 } else {
-                    socket.once('connect', emitCreate);
+                    socket.once('connect', emitAction);
                 }
 
             } catch (err) {
@@ -138,6 +158,7 @@ const LiveSessionHost = () => {
     const handleNextQuestion = () => {
         if (currentQuestionIndex === test.questions.length - 1) {
             socketRef.current?.emit('host-end-session', { testId });
+            sessionStorage.removeItem(`active_session_${testId}`);
             setStatus("final");
             return;
         }

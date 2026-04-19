@@ -25,7 +25,7 @@ const Footer = () => {
               <FaShieldAlt className="text-[10px]" />
               <FaLock className="text-[10px]" />
             </div>
-            <span>Built by</span>
+            <span>Developer's</span>
             <a
               href="https://teamignite.in"
               className="text-white font-bold hover:text-blue-200 transition-colors"
@@ -34,8 +34,6 @@ const Footer = () => {
             >
               Team Ignite
             </a>
-            <span>with</span>
-            <FaHeart className="text-red-400 text-xs animate-pulse" />
           </div>
         </div>
       </div>

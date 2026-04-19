@@ -5,7 +5,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import KPICard from '../components/KPICard';
 import TestHistoryTable from '../components/TestHistoryTable';
 import GoalSelector from '../components/GoalSelector';
-import { 
+import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
   BarChart, Bar, Cell
 } from 'recharts';
@@ -37,33 +37,33 @@ const ExamDashboard = () => {
     }
 
     const initializeDashboard = async () => {
-       let user = JSON.parse(localStorage.getItem('user')) || {};
-       setUserName(user.name || 'Learner');
-       
-       // If user ID is missing, try to recover it from the server
-       if (!user._id) {
-           console.warn("User ID missing. Attempting to recover session...");
-           try {
-               const headers = { Authorization: `Bearer ${token}` };
-               const response = await axios.get(`${apiBase}/api/auth/me`, { headers });
-               
-               if (response.data && response.data.user) {
-                   user = response.data.user;
-                   setUserName(user.name || 'Learner');
-                   localStorage.setItem('user', JSON.stringify(user));
-                   console.log("Session recovered!", user);
-               }
-           } catch (error) {
-               console.error("Failed to recover session:", error);
-               return; 
-           }
-       }
-       
-       if (user._id) {
-           await fetchUserTests(user._id);
-       }
-       // refresh the profile info as well
-       await fetchProfileData();
+      let user = JSON.parse(localStorage.getItem('user')) || {};
+      setUserName(user.name || 'Learner');
+
+      // If user ID is missing, try to recover it from the server
+      if (!user._id) {
+        console.warn("User ID missing. Attempting to recover session...");
+        try {
+          const headers = { Authorization: `Bearer ${token}` };
+          const response = await axios.get(`${apiBase}/api/auth/me`, { headers });
+
+          if (response.data && response.data.user) {
+            user = response.data.user;
+            setUserName(user.name || 'Learner');
+            localStorage.setItem('user', JSON.stringify(user));
+            console.log("Session recovered!", user);
+          }
+        } catch (error) {
+          console.error("Failed to recover session:", error);
+          return;
+        }
+      }
+
+      if (user._id) {
+        await fetchUserTests(user._id);
+      }
+      // refresh the profile info as well
+      await fetchProfileData();
     };
 
     initializeDashboard();
@@ -123,13 +123,13 @@ const ExamDashboard = () => {
 
   // real accuracy calculation
   const accuracyCalc = testRecords.reduce((acc, record) => {
-      const attempt = record.attempts.reduce((prev, curr) => curr.score > prev.score ? curr : prev, record.attempts[0]);
-      if (!attempt) return acc;
-      const correctCount = attempt.questionsAttempted.filter(q => q.isCorrect).length;
-      return {
-          correct: acc.correct + correctCount,
-          total: acc.total + attempt.questionsAttempted.length
-      };
+    const attempt = record.attempts.reduce((prev, curr) => curr.score > prev.score ? curr : prev, record.attempts[0]);
+    if (!attempt) return acc;
+    const correctCount = attempt.questionsAttempted.filter(q => q.isCorrect).length;
+    return {
+      correct: acc.correct + correctCount,
+      total: acc.total + attempt.questionsAttempted.length
+    };
   }, { correct: 0, total: 0 });
 
   const accuracy = accuracyCalc.total > 0
@@ -141,10 +141,10 @@ const ExamDashboard = () => {
     const days = Array.from(new Set(records.map(r => new Date(r.lastAttempted).toDateString()))).sort((a, b) => new Date(b) - new Date(a));
     let streak = 0;
     let cursor = new Date();
-    cursor.setHours(0,0,0,0);
+    cursor.setHours(0, 0, 0, 0);
     for (let day of days) {
       const d = new Date(day);
-      d.setHours(0,0,0,0);
+      d.setHours(0, 0, 0, 0);
       if (d.getTime() === cursor.getTime()) {
         streak++;
         cursor.setDate(cursor.getDate() - 1);
@@ -174,11 +174,11 @@ const ExamDashboard = () => {
       const d = new Date(r.lastAttempted);
       return d < new Date(now - weekMs) && d >= new Date(now - 2 * weekMs);
     });
-    const avg = arr => arr.length ? arr.reduce((a,c)=>a + (c.bestScore||0),0)/arr.length : 0;
+    const avg = arr => arr.length ? arr.reduce((a, c) => a + (c.bestScore || 0), 0) / arr.length : 0;
     const w1 = avg(week1);
     const w2 = avg(week2);
     if (w2 === 0) return w1 > 0 ? 100 : 0;
-    return Math.round(((w1 - w2)/w2)*100);
+    return Math.round(((w1 - w2) / w2) * 100);
   };
 
   const currentStreak = calculateStreak(testRecords);
@@ -188,22 +188,22 @@ const ExamDashboard = () => {
 
   // Aggregation by Subject (Category)
   const subjectMap = testRecords.reduce((acc, record) => {
-      const cat = record.testId?.category || "General"; // Populated from backend
-      if (!acc[cat]) acc[cat] = { totalScore: 0, count: 0 };
-      acc[cat].totalScore += record.bestScore;
-      acc[cat].count += 1;
-      return acc;
+    const cat = record.testId?.category || "General"; // Populated from backend
+    if (!acc[cat]) acc[cat] = { totalScore: 0, count: 0 };
+    acc[cat].totalScore += record.bestScore;
+    acc[cat].count += 1;
+    return acc;
   }, {});
 
   const subjectData = Object.keys(subjectMap).map((key, index) => ({
-      name: key.charAt(0).toUpperCase() + key.slice(1),
-      score: Math.round(subjectMap[key].totalScore / subjectMap[key].count),
-      fill: ['#3b82f6', '#10b981', '#f59e0b', '#6366f1'][index % 4]
+    name: key.charAt(0).toUpperCase() + key.slice(1),
+    score: Math.round(subjectMap[key].totalScore / subjectMap[key].count),
+    fill: ['#3b82f6', '#10b981', '#f59e0b', '#6366f1'][index % 4]
   }));
 
   // Fallback if no data
   if (subjectData.length === 0) {
-      subjectData.push({ name: 'No Data', score: 0, fill: '#cbd5e1' });
+    subjectData.push({ name: 'No Data', score: 0, fill: '#cbd5e1' });
   }
 
   // Chart Data (Last 7 tests)
@@ -213,7 +213,7 @@ const ExamDashboard = () => {
       name: new Date(r.lastAttempted).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
       score: r.bestScore
     }));
-  
+
   // Sparkline Generators
   const genSparkline = (field) => testRecords.slice(-6).map(r => ({ value: r[field] || 0 }));
   const scoreSpark = testRecords.slice(-6).map(r => ({ value: r.bestScore }));
@@ -256,7 +256,7 @@ const ExamDashboard = () => {
               </h1>
               <p className="text-slate-500 text-lg">Let's track your progress and ace those tests</p>
             </div>
-            <button 
+            <button
               onClick={() => setShowGoalModal(true)}
               className="hidden md:flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-blue-200 hover:shadow-xl hover:scale-105 transition-all transform"
             >
@@ -267,34 +267,34 @@ const ExamDashboard = () => {
 
         {/* KPI Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KPICard 
-            title="Total Tests" 
-            value={totalTests} 
-            icon={<FaClipboardList />} 
-            color="blue" 
+          <KPICard
+            title="Total Tests"
+            value={totalTests}
+            icon={<FaClipboardList />}
+            color="blue"
             chartData={scoreSpark}
           />
-          <KPICard 
-            title="Avg Score" 
-            value={avgScore} 
-            unit="%" 
-            icon={<FaTrophy />} 
-            color="green" 
+          <KPICard
+            title="Avg Score"
+            value={avgScore}
+            unit="%"
+            icon={<FaTrophy />}
+            color="green"
             chartData={scoreSpark}
           />
-          <KPICard 
-            title="Accuracy" 
-            value={accuracy} 
-            icon={<FaCheckCircle />} 
-            color="purple" 
+          <KPICard
+            title="Accuracy"
+            value={accuracy}
+            icon={<FaCheckCircle />}
+            color="purple"
             chartData={scoreSpark}
           />
-          <KPICard 
-            title="Best Score" 
-            value={bestScore} 
-            unit="%" 
-            icon={<FaStar />} 
-            color="orange" 
+          <KPICard
+            title="Best Score"
+            value={bestScore}
+            unit="%"
+            icon={<FaStar />}
+            color="orange"
             chartData={scoreSpark}
           />
         </div>
@@ -352,38 +352,38 @@ const ExamDashboard = () => {
               </div>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={scoreTrendData.length > 0 ? scoreTrendData : [{name: 'Jan 5', score: 45}, {name: 'Jan 10', score: 72}, {name: 'Jan 15', score: 65}, {name: 'Jan 20', score: 90}]}>
+                  <AreaChart data={scoreTrendData.length > 0 ? scoreTrendData : [{ name: 'Jan 5', score: 45 }, { name: 'Jan 10', score: 72 }, { name: 'Jan 15', score: 65 }, { name: 'Jan 20', score: 90 }]}>
                     <defs>
                       <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{fill: '#64748b', fontSize: 12, fontWeight: 500}} 
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
                       dy={10}
                     />
-                    <YAxis 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{fill: '#64748b', fontSize: 12, fontWeight: 500}} 
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
                       dx={-10}
                     />
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', background: 'rgba(255,255,255,0.95)' }}
                       wrapperStyle={{ outline: 'none' }}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="score" 
-                      stroke="#3b82f6" 
-                      strokeWidth={3} 
-                      fillOpacity={1} 
-                      fill="url(#colorScore)" 
+                    <Area
+                      type="monotone"
+                      dataKey="score"
+                      stroke="#3b82f6"
+                      strokeWidth={3}
+                      fillOpacity={1}
+                      fill="url(#colorScore)"
                       dot={{ r: 5, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
                       activeDot={{ r: 7 }}
                     />
@@ -404,21 +404,21 @@ const ExamDashboard = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={subjectData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} 
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
                       dy={10}
                     />
-                    <YAxis 
-                       axisLine={false} 
-                       tickLine={false} 
-                       tick={{fill: '#64748b', fontSize: 12, fontWeight: 500}} 
-                       dx={-10}
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
+                      dx={-10}
                     />
-                    <Tooltip 
-                      cursor={{fill: '#f1f5f9', opacity: 0.5}}
+                    <Tooltip
+                      cursor={{ fill: '#f1f5f9', opacity: 0.5 }}
                       contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', background: 'rgba(255,255,255,0.95)' }}
                       wrapperStyle={{ outline: 'none' }}
                     />
@@ -433,7 +433,7 @@ const ExamDashboard = () => {
               <div className="flex justify-center gap-6 pt-4 flex-wrap">
                 {subjectData.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: item.fill}}></span>
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.fill }}></span>
                     <span className="text-xs font-bold text-slate-700">{item.name}</span>
                   </div>
                 ))}
@@ -449,7 +449,7 @@ const ExamDashboard = () => {
               <h3 className="text-2xl font-bold text-slate-800">Recent Tests</h3>
               <p className="text-sm text-slate-500 mt-1">Your latest test attempts</p>
             </div>
-            <button 
+            <button
               onClick={() => navigate('/my-tests')}
               className="text-blue-600 font-bold text-sm hover:text-blue-700 flex items-center gap-1 px-4 py-2 hover:bg-blue-50 rounded-lg transition-all"
             >
@@ -463,7 +463,7 @@ const ExamDashboard = () => {
 
         {/* Floating Action Button (Mobile) */}
         <div className="fixed bottom-8 right-8 md:hidden z-50">
-          <button 
+          <button
             onClick={() => setShowGoalModal(true)}
             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all transform"
           >
@@ -473,7 +473,7 @@ const ExamDashboard = () => {
 
         {/* Goal Selector Modal */}
         {showGoalModal && (
-          <GoalSelector 
+          <GoalSelector
             onSelect={(category) => {
               setShowGoalModal(false);
               navigate(`/tests?category=${category}`);

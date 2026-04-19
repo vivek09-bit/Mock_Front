@@ -60,10 +60,20 @@ const GlobalLiveJoin = () => {
             }
         });
 
-        socket.on('joined-success', ({ testId }) => {
+        socket.on('joined-success', ({ testId, rejoinKey }) => {
             setTestId(testId);
             setStatus("waiting");
             setError("");
+
+            // Store for rejoin
+            if (rejoinKey) {
+                localStorage.setItem(`live_rejoin_${testId}`, JSON.stringify({
+                    testId,
+                    rejoinKey,
+                    passcode: passcodeRef.current,
+                    name: nameRef.current
+                }));
+            }
             
             // Fetch test data once we know the testId
             fetch(`${apiBase}/api/instructor/public/test-info/${testId}`)
@@ -96,10 +106,23 @@ const GlobalLiveJoin = () => {
 
         socket.on('session-ended', () => {
             setStatus("finished");
+            localStorage.removeItem(`live_rejoin_${testId}`); // Cleanup
+        });
+
+        socket.on('rejoin-state', ({ status, currentQuestionIndex, myScore, test }) => {
+            console.log("[STUDENT_REJOIN] Restoring state:", { status, myScore });
+            setStatus(status);
+            setGameState(prev => ({ 
+                ...prev, 
+                currentQuestionIndex, 
+                myScore,
+                test: test || prev.test
+            }));
         });
 
         socket.on('kicked', () => {
             alert("Removed from session by host.");
+            localStorage.removeItem(`live_rejoin_${testId}`);
             window.location.reload();
         });
 
@@ -107,6 +130,32 @@ const GlobalLiveJoin = () => {
             setError(message);
             setIsVerifying(false);
         });
+
+        // Auto-rejoin logic
+        const tryRejoin = () => {
+            // Since we don't know the exact testId yet, we scan localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('live_rejoin_')) {
+                    try {
+                        const saved = JSON.parse(localStorage.getItem(key));
+                        console.log("[STUDENT] Found saved session, attempting rejoin...", saved);
+                        setName(saved.name);
+                        setPasscode(saved.passcode);
+                        socket.emit('student-rejoin-session', { 
+                            testId: saved.testId, 
+                            rejoinKey: saved.rejoinKey 
+                        });
+                        break;
+                    } catch (e) {
+                        console.error("Failed to parse saved session", e);
+                    }
+                }
+            }
+        };
+
+        if (socket.connected) tryRejoin();
+        else socket.once('connect', tryRejoin);
 
         return () => {
             if (socket) socket.disconnect();
