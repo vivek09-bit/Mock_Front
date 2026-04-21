@@ -22,7 +22,6 @@ const FullMockTest = (props) => {
   const currentQuestion = test?.questions?.[currentQuestionIndex];
   const videoRef = useRef(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(document.fullscreenElement !== null);
 
   // Timer urgency levels
   const isCritical = timeLeft < 300; // < 5 minutes
@@ -46,47 +45,16 @@ const FullMockTest = (props) => {
     };
     startCamera();
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setTabSwitchCount((prev) => {
-          const newCount = prev + 1;
-          if (newCount > 2) handleSubmit();
-          else setWarningMessage(`⚠️ CRITICAL: Security violation (Tab switch). Final Warning: ${newCount}/2`);
-          return newCount;
-        });
-      }
-    };
-
-    const handleFullscreenChange = () => {
-      const isFull = document.fullscreenElement !== null;
-      setIsFullscreen(isFull);
-      if (!isFull) {
-        setWarningMessage("⚠️ WARNING: Fullscreen mode is REQUIRED. Please click 'Re-enter Fullscreen' below.");
-      }
-    };
-
     const handleContextMenu = (e) => e.preventDefault();
-    const handleKeyDown = (e) => {
-      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C'))) {
-        e.preventDefault();
-        setWarningMessage("⚠️ Security System: DevTools are blocked.");
-      }
-    };
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       const stream = videoRef.current?.srcObject;
       stream?.getTracks().forEach(track => track.stop());
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showGuidelines, setWarningMessage, setTabSwitchCount, handleSubmit]);
+  }, [showGuidelines, setWarningMessage]);
 
   const proctoringSidebar = (
     <div className="flex flex-col gap-3">
@@ -107,24 +75,6 @@ const FullMockTest = (props) => {
     </div>
   );
 
-  if (!isFullscreen && !showGuidelines) {
-    return (
-      <div className="h-screen bg-slate-900 flex flex-col items-center justify-center p-8 text-center text-white">
-        <FaExclamationTriangle className="text-6xl text-amber-500 mb-6" />
-        <h1 className="text-3xl font-bold mb-4 tracking-tight">Assessment Interrupted</h1>
-        <p className="text-slate-400 max-w-md mb-8">
-          This test is protected by mandatory fullscreen proctoring. You must remain in fullscreen to view questions and submit answers.
-        </p>
-        <button
-          onClick={enterFullScreen}
-          className="bg-white text-slate-900 px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-slate-100 transition-all"
-        >
-          <FaExpand />
-          Re-enter Fullscreen (Recommended)
-        </button>
-      </div>
-    );
-  }
 
   return (
     <>

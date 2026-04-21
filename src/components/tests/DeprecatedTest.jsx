@@ -18,81 +18,20 @@ const DeprecatedTest = (props) => {
 
   const currentQuestion = test?.questions?.[currentQuestionIndex];
 
-  // Proctoring logic (copied into component as requested)
-  useEffect(() => {
-    if (showGuidelines) return;
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setTabSwitchCount((prev) => {
-          const newCount = prev + 1;
-          if (newCount > 2) {
-            handleSubmit();
-          } else {
-            setWarningMessage(`⚠️ Warning: You switched tabs! Only 2 switches allowed. Current switches: ${newCount}/2`);
-          }
-          return newCount;
-        });
-      }
-    };
-
-    const handleFullScreenChange = () => {
-      if (!document.fullscreenElement) {
-        setTabSwitchCount((prev) => {
-          const newCount = prev + 1;
-          if (newCount > 2) {
-            handleSubmit();
-          } else {
-            setWarningMessage(`⚠️ Warning: You exited full screen! This counts as a violation. Current violations: ${newCount}/2`);
-          }
-          return newCount;
-        });
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    document.addEventListener("fullscreenchange", handleFullScreenChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      document.removeEventListener("fullscreenchange", handleFullScreenChange);
-    };
-  }, [showGuidelines, setWarningMessage, setTabSwitchCount, handleSubmit]);
-
   useEffect(() => {
     if (showGuidelines) return;
 
     const handleContextMenu = (e) => {
       e.preventDefault();
-      setWarningMessage("⚠️ Right-click is not allowed during the test.");
       return false;
     };
 
-    const handleKeyDown = (e) => {
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-        (e.ctrlKey && e.key === 'u')
-      ) {
-        e.preventDefault();
-        setWarningMessage("⚠️ Developer tools are disabled.");
-        return false;
-      }
-      if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
-        e.preventDefault();
-        setWarningMessage("⚠️ Copy/Paste is disabled.");
-        return false;
-      }
-    };
-
     document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showGuidelines, setWarningMessage]);
+  }, [showGuidelines]);
 
   // LaTeX/Math Rendering
   useEffect(() => {

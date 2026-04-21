@@ -24,54 +24,6 @@ const PremockTest = (props) => {
   const isCritical = timeLeft < 300; // < 5 minutes
   const isVeryLow = timeLeft < 60;   // < 1 minute
 
-  // Security - Tab Switching & Anti-Cheat
-  useEffect(() => {
-    if (showGuidelines) return;
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setTabSwitchCount((prev) => {
-          const newCount = prev + 1;
-          if (newCount > 2) {
-            handleSubmit();
-          } else {
-            setWarningMessage(`⚠️ Security Alert: Tab switch detected. Only 2 switches allowed. Count: ${newCount}/2`);
-          }
-          return newCount;
-        });
-      }
-    };
-
-    const handleContextMenu = (e) => {
-      e.preventDefault();
-      setWarningMessage("⚠️ Right-click is disabled in Premock mode.");
-    };
-
-    const handleKeyDown = (e) => {
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-        (e.ctrlKey && e.key === 'u')
-      ) {
-        e.preventDefault();
-        setWarningMessage("⚠️ Developer tools are disabled.");
-      }
-      if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
-        e.preventDefault();
-        setWarningMessage("⚠️ Copy/Paste is disabled.");
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [showGuidelines, setWarningMessage, setTabSwitchCount, handleSubmit]);
 
   // LaTeX Rendering
   useEffect(() => {

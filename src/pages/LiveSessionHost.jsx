@@ -78,7 +78,13 @@ const LiveSessionHost = () => {
 
         socket.on('session-ended', () => {
             console.log('[HOST_SESSION_ENDED] Host ended the test session');
-            sessionStorage.removeItem(`active_session_${testId}`);
+            localStorage.removeItem(`active_session_${testId}`);
+        });
+
+        socket.on('error', (data) => {
+            alert(data.message || "An error occurred with the live session.");
+            localStorage.removeItem(`active_session_${testId}`);
+            navigate('/instructor/my-tests');
         });
 
         socket.on('session-resumed', (data) => {
@@ -105,13 +111,13 @@ const LiveSessionHost = () => {
                 setTest(testData);
 
                 const emitAction = () => {
-                    const savedSession = sessionStorage.getItem(`active_session_${testId}`);
+                    const savedSession = localStorage.getItem(`active_session_${testId}`);
                     if (savedSession) {
                         console.log("[HOST] Attempting to REJOIN session...");
                         socket.emit('host-rejoin-session', { testId });
                     } else {
                         console.log("[HOST] Creating NEW session...");
-                        sessionStorage.setItem(`active_session_${testId}`, generatedPasscode);
+                        localStorage.setItem(`active_session_${testId}`, generatedPasscode);
                         socket.emit('host-create-session', {
                             testId,
                             passcode: generatedPasscode,
@@ -158,7 +164,7 @@ const LiveSessionHost = () => {
     const handleNextQuestion = () => {
         if (currentQuestionIndex === test.questions.length - 1) {
             socketRef.current?.emit('host-end-session', { testId });
-            sessionStorage.removeItem(`active_session_${testId}`);
+            localStorage.removeItem(`active_session_${testId}`);
             setStatus("final");
             return;
         }
@@ -182,6 +188,7 @@ const LiveSessionHost = () => {
     );
 
     if (status === "lobby") {
+        if (!test) return null;
         return (
             <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,#3730a3,#1e1b4b_60%,#0f172a)] p-4 md:p-8 flex flex-col gap-6 md:gap-8 animate-fadeIn relative overflow-hidden">
                 {/* Decorative background elements */}
@@ -278,7 +285,8 @@ const LiveSessionHost = () => {
     }
 
     if (status === "question") {
-        const currentQuestion = test.questions[currentQuestionIndex];
+        const currentQuestion = test?.questions?.[currentQuestionIndex];
+        if (!currentQuestion) return null;
         return (
             <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,#3730a3,#1e1b4b_60%,#0f172a)] flex flex-col animate-slideUp text-white pb-32">
                 {/* Progress Header */}

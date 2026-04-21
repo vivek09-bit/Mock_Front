@@ -8,7 +8,7 @@ import LiveTest from "../components/tests/LiveTest";
 const GlobalLiveJoin = () => {
     const navigate = useNavigate();
     const { apiBase } = useContext(ThemeContext);
-    
+
     // ── Core State ──────────────────────────────────────────────────────────
     const socketRef = useRef(null);
 
@@ -22,9 +22,9 @@ const GlobalLiveJoin = () => {
     const [testId, setTestId] = useState(null);
     const [testInfo, setTestInfo] = useState(null);
     const [isVerifying, setIsVerifying] = useState(false);
-    
+
     const requiredFields = testInfo?.requiredStudentDetails || [];
-    
+
     // Game State
     const [gameState, setGameState] = useState({
         currentQuestionIndex: -1,
@@ -33,10 +33,68 @@ const GlobalLiveJoin = () => {
     });
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
+    const [tabSwitchCount, setTabSwitchCount] = useState(0);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [warningMessage, setWarningMessage] = useState("");
 
     const nameRef = useRef(name);
     const passcodeRef = useRef(passcode);
-    
+
+    // Fullscreen and Security Logic
+    const enterFullScreen = () => {
+        const docElm = document.documentElement;
+        if (docElm.requestFullscreen) docElm.requestFullscreen().catch((err) => console.error(err));
+        else if (docElm.mozRequestFullScreen) docElm.mozRequestFullScreen();
+        else if (docElm.webkitRequestFullScreen) docElm.webkitRequestFullScreen();
+        else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen();
+    };
+
+    const exitFullScreen = () => {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        else if (document.msExitFullscreen) document.msExitFullscreen();
+    };
+
+    useEffect(() => {
+        if (status !== "playing") return;
+
+        enterFullScreen();
+        setIsFullscreen(true);
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                setTabSwitchCount((prev) => {
+                    const newCount = prev + 1;
+                    if (newCount > 2) {
+                        alert("DISQUALIFIED: Excessive tab switching detected.");
+                        localStorage.removeItem(`live_rejoin_${testId}`);
+                        window.location.reload();
+                    } else {
+                        setWarningMessage(`BATTLE ALERT: Tab switch detected! [${newCount}/2] violations.`);
+                    }
+                    return newCount;
+                });
+            }
+        };
+
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+
+        const handleContextMenu = (e) => e.preventDefault();
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener('contextmenu', handleContextMenu);
+
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+            document.removeEventListener('contextmenu', handleContextMenu);
+        };
+    }, [status, testId]);
+
     useEffect(() => {
         nameRef.current = name;
         passcodeRef.current = passcode;
@@ -74,7 +132,7 @@ const GlobalLiveJoin = () => {
                     name: nameRef.current
                 }));
             }
-            
+
             // Fetch test data once we know the testId
             fetch(`${apiBase}/api/instructor/public/test-info/${testId}`)
                 .then(res => res.json())
@@ -95,7 +153,7 @@ const GlobalLiveJoin = () => {
             setShowResult(false);
             setGameState(prev => ({ ...prev, currentQuestionIndex }));
         });
-        
+
         socket.on('answer-revealed', ({ responses, participants }) => {
             const myResponse = responses?.find(r => r.socketId === socket.id);
             setIsCorrect(!!myResponse?.isCorrect);
@@ -112,9 +170,9 @@ const GlobalLiveJoin = () => {
         socket.on('rejoin-state', ({ status, currentQuestionIndex, myScore, test }) => {
             console.log("[STUDENT_REJOIN] Restoring state:", { status, myScore });
             setStatus(status);
-            setGameState(prev => ({ 
-                ...prev, 
-                currentQuestionIndex, 
+            setGameState(prev => ({
+                ...prev,
+                currentQuestionIndex,
                 myScore,
                 test: test || prev.test
             }));
@@ -142,9 +200,9 @@ const GlobalLiveJoin = () => {
                         console.log("[STUDENT] Found saved session, attempting rejoin...", saved);
                         setName(saved.name);
                         setPasscode(saved.passcode);
-                        socket.emit('student-rejoin-session', { 
-                            testId: saved.testId, 
-                            rejoinKey: saved.rejoinKey 
+                        socket.emit('student-rejoin-session', {
+                            testId: saved.testId,
+                            rejoinKey: saved.rejoinKey
                         });
                         break;
                     } catch (e) {
@@ -166,9 +224,9 @@ const GlobalLiveJoin = () => {
         const finalName = studentDetails["Name"] || studentDetails["Full Name"] || sName || "Guest";
         const merged = { ...studentDetails, Name: finalName };
         if (socketRef.current) {
-            socketRef.current.emit('student-join-session', { 
-                testId: tid, 
-                passcode: sPasscode.trim().toUpperCase(), 
+            socketRef.current.emit('student-join-session', {
+                testId: tid,
+                passcode: sPasscode.trim().toUpperCase(),
                 studentName: finalName,
                 studentDetails: merged
             });
@@ -179,7 +237,7 @@ const GlobalLiveJoin = () => {
         e.preventDefault();
         setError("");
         if (!name.trim() || !passcode.trim()) return setError("Enter Name and Game PIN.");
-        
+
         setIsVerifying(true);
         if (socketRef.current) {
             socketRef.current.emit("verify-passcode", { passcode: passcode.trim().toUpperCase() });
@@ -220,7 +278,7 @@ const GlobalLiveJoin = () => {
                             <form onSubmit={handlePinSubmit} className="p-8 space-y-4 flex flex-col">
                                 <div className="relative group">
                                     <FaUser className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
-                                    <input 
+                                    <input
                                         type="text"
                                         placeholder="NICKNAME"
                                         value={name}
@@ -230,7 +288,7 @@ const GlobalLiveJoin = () => {
                                 </div>
                                 <div className="relative group">
                                     <FaLock className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
-                                    <input 
+                                    <input
                                         type="text"
                                         placeholder="GAME PIN"
                                         maxLength={4}
@@ -246,12 +304,12 @@ const GlobalLiveJoin = () => {
                                     </div>
                                 )}
 
-                                <button 
+                                <button
                                     type="submit"
                                     disabled={isVerifying}
                                     className="w-full bg-amber-500 text-slate-950 py-5 rounded-[2rem] font-black text-2xl hover:bg-amber-400 disabled:bg-amber-500/50 transition-all shadow-xl shadow-amber-900/20 flex items-center justify-center gap-3 transform active:scale-95 mt-4"
                                 >
-                                    {isVerifying ? <FaSpinner className="animate-spin text-sm" /> : <FaPlay className="text-sm" />} 
+                                    {isVerifying ? <FaSpinner className="animate-spin text-sm" /> : <FaPlay className="text-sm" />}
                                     {isVerifying ? "CONNECTING..." : "READY!"}
                                 </button>
                             </form>
@@ -260,9 +318,9 @@ const GlobalLiveJoin = () => {
                                 <button type="button" onClick={() => setJoinStage("pin")} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-widest mb-4">
                                     <FaChevronLeft /> Back
                                 </button>
-                                
+
                                 <p className="text-white font-black text-xl mb-6">REQUIRED INFO</p>
-                                
+
                                 {requiredFields.map(field => (
                                     <div key={field} className="relative">
                                         <input
@@ -282,7 +340,7 @@ const GlobalLiveJoin = () => {
                                     </div>
                                 )}
 
-                                <button 
+                                <button
                                     type="submit"
                                     className="w-full bg-indigo-500 text-white py-5 rounded-[2rem] font-black text-2xl hover:bg-indigo-400 transition-all shadow-xl shadow-indigo-500/20 flex items-center justify-center gap-3 transform active:scale-95 mt-4"
                                 >
@@ -320,7 +378,7 @@ const GlobalLiveJoin = () => {
                         Waiting for host to signal...
                     </div>
                 </div>
-                
+
                 <div className="max-w-md bg-amber-500/5 p-8 rounded-[3rem] border border-amber-500/10 text-center backdrop-blur-sm">
                     <p className="text-amber-200/60 italic text-sm font-medium leading-relaxed">
                         "Speed is your ally. The faster you respond correctly, the higher you climb the ranks!"
@@ -331,15 +389,53 @@ const GlobalLiveJoin = () => {
     }
 
     if (status === "playing") {
+        if (!isFullscreen) {
+            return (
+                <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-8 text-center text-white">
+                    <div className="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center text-5xl mb-8 animate-pulse shadow-[0_0_50px_rgba(239,68,68,0.4)]">
+                        ⚠️
+                    </div>
+                    <h2 className="text-4xl font-black mb-4 tracking-tighter">ARENA INTERRUPTED</h2>
+                    <p className="text-slate-400 max-w-md mb-10 font-medium">
+                        Full-screen mode is mandatory to ensure a fair battle. Please return to the arena.
+                    </p>
+                    <button
+                        onClick={() => {
+                            enterFullScreen();
+                            setIsFullscreen(true);
+                            setWarningMessage("");
+                        }}
+                        className="bg-amber-500 text-slate-950 px-12 py-5 rounded-3xl font-black text-xl hover:bg-amber-400 transition-all shadow-xl shadow-amber-900/20 active:scale-95"
+                    >
+                        RETURN TO BATTLE
+                    </button>
+                </div>
+            );
+        }
+
         return (
             <div className="relative min-h-screen">
-                <LiveTest 
+                <LiveTest
                     test={gameState.test}
                     currentQuestionIndex={gameState.currentQuestionIndex}
                     handleAnswerChange={handleAnswer}
-                    answers={{}} 
+                    answers={{}}
                     isHost={false}
                 />
+
+                {warningMessage && (
+                    <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[200] animate-bounce">
+                        <div className="bg-red-600 text-white px-8 py-4 rounded-2xl font-black shadow-2xl border-4 border-red-400 flex items-center gap-4">
+                            <span>{warningMessage}</span>
+                            <button
+                                onClick={() => setWarningMessage("")}
+                                className="bg-white/20 hover:bg-white/40 px-3 py-1 rounded-lg text-xs"
+                            >
+                                GOT IT
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {showResult && (
                     <div className={`fixed inset-0 z-[100] flex flex-col items-center justify-center backdrop-blur-xl p-4 ${isCorrect ? "bg-green-600/90" : "bg-red-600/90"}`}>

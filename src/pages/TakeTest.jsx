@@ -37,6 +37,7 @@ const TakeTest = () => {
   const [testStartTime, setTestStartTime] = useState(null);
 
   const [showGuidelines, setShowGuidelines] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
   const [questionStatus, setQuestionStatus] = useState({});
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -49,14 +50,71 @@ const TakeTest = () => {
 
   const { apiBase } = useContext(ThemeContext);
 
-  // Enhanced Security: Prevent malicious behaviors
+  // Security - Tab Switching & Fullscreen Enforcement
+  useEffect(() => {
+    if (showGuidelines) return;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setTabSwitchCount((prev) => {
+          const newCount = prev + 1;
+          if (newCount > 3) {
+            handleSubmit();
+            setWarningMessage("⚠️ Test terminated due to excessive tab switching.");
+          } else {
+            setWarningMessage(`⚠️ Security Alert: Tab switch detected. Only 3 switches allowed. Switch count: ${newCount}/3`);
+          }
+          return newCount;
+        });
+      }
+    };
+
+    const handleFullscreenChange = () => {
+      const isFull = !!document.fullscreenElement;
+      setIsFullscreen(isFull);
+      if (!isFull) {
+        setWarningMessage("⚠️ WARNING: Fullscreen mode is REQUIRED. Please click 'Resume Test' to continue.");
+      }
+    };
+
+    const handleContextMenu = (e) => e.preventDefault();
+    const handleKeyDown = (e) => {
+      // Block DevTools
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
+        (e.ctrlKey && e.key === 'u')
+      ) {
+        e.preventDefault();
+        setWarningMessage("⚠️ Developer tools are disabled.");
+      }
+      // Block Copy/Paste
+      if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'x')) {
+        e.preventDefault();
+        setWarningMessage("⚠️ Copy/Paste is disabled.");
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showGuidelines, handleSubmit]);
+
+  // Enhanced Security: Prevent malicious behaviors (Resize only)
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
       if (window.innerWidth >= 768) setIsSidebarOpen(false);
     };
-    window.addEventListener('resize', handleResize);
-
+    
     // Security: Prevent screenshot tools
     const preventScreenshots = (e) => {
       if (e.keyCode === 44) {
@@ -201,11 +259,13 @@ const TakeTest = () => {
     }
     enterFullScreen();
     setShowGuidelines(false);
+    setIsFullscreen(true);
   };
 
   const handleResumeTest = () => {
     enterFullScreen();
     setWarningMessage("");
+    setIsFullscreen(true);
   };
 
   const handleAnswerChange = (selectedOption) => {
@@ -417,6 +477,25 @@ const TakeTest = () => {
             <button onClick={startTest} className="bg-blue-700 text-white py-3 px-10 rounded-md text-lg font-bold">I am ready to begin</button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // Interruption Overlay for Fullscreen exit
+  if (!isFullscreen && !showGuidelines) {
+    return (
+      <div className="h-screen bg-slate-900 flex flex-col items-center justify-center p-8 text-center text-white">
+        <div className="text-6xl text-orange-500 mb-6 font-bold">⚠️</div>
+        <h1 className="text-3xl font-bold mb-4 tracking-tight">Assessment Interrupted</h1>
+        <p className="text-slate-400 max-w-md mb-8">
+          This test requires mandatory fullscreen mode. You must remain in fullscreen to view questions and continue.
+        </p>
+        <button
+          onClick={handleResumeTest}
+          className="bg-white text-slate-900 px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-slate-100 transition-all"
+        >
+          Resume Test (Re-enter Fullscreen)
+        </button>
       </div>
     );
   }
