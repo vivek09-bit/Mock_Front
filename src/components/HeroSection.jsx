@@ -79,10 +79,6 @@ const HeroSection = () => {
         </button>
       </section>
 
-      {/* 🌍 Footer */}
-      <footer className="bg-slate-950 text-white py-8 text-center border-t border-blue-900/30">
-        <p className="text-blue-300">&copy; 2026 NextGen Learning. All rights reserved.</p>
-      </footer>
     </div>
   );
 };
